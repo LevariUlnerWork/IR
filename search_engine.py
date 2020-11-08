@@ -4,6 +4,7 @@ from parser_module import Parse
 from indexer import Indexer
 from searcher import Searcher
 import utils
+import os
 
 
 def run_engine():
@@ -18,6 +19,7 @@ def run_engine():
     p = Parse()
     indexer = Indexer(config)
 
+    print(os.listdir(config.get__corpusPath()))
     documents_list = r.read_file(file_name='covid19_07-08.snappy.parquet')
     # Iterate over every document in the file
     for idx, document in enumerate(documents_list):
