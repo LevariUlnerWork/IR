@@ -18,16 +18,19 @@ def run_engine():
     r = ReadFile(corpus_path=config.get__corpusPath())
     p = Parse()
     indexer = Indexer(config)
-
-    print(os.listdir(config.get__corpusPath()))
-    documents_list = r.read_file(file_name='covid19_07-08.snappy.parquet')
-    # Iterate over every document in the file
-    for idx, document in enumerate(documents_list):
-        # parse the document
-        parsed_document = p.parse_doc(document)
-        number_of_documents += 1
-        # index the document data
-        indexer.add_new_doc(parsed_document)
+    listOfDoc = os.listdir(config.get__corpusPath())
+    i = 1
+    #Read all files:
+    while i < len(os.listdir(config.get__corpusPath())):
+        documents_list = r.read_file(file_name=listOfDoc[i])
+        # Iterate over every document in the file
+        for idx, document in enumerate(documents_list):
+            # parse the document
+            parsed_document = p.parse_doc(document)
+            number_of_documents += 1
+            # index the document data
+            indexer.add_new_doc(parsed_document)
+        i += 1
     print('Finished parsing and indexing. Starting to export files')
 
     utils.save_obj(indexer.inverted_idx, "inverted_idx")
