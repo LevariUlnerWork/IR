@@ -1,4 +1,6 @@
+import os
 from nltk.corpus import stopwords
+
 from nltk.tokenize import word_tokenize
 from document import Document
 
@@ -6,7 +8,13 @@ from document import Document
 class Parse:
 
     def __init__(self):
-        self.stop_words = stopwords.words('english')
+        #self.stop_words = stopwords.words('english')
+        full_path = open('stop-words.txt',"r")
+        listOfStopWords = full_path.read()
+        print(listOfStopWords)
+        full_path.close()
+        self.stop_words = listOfStopWords.split(" ")
+        print(type(self.stop_words))
 
     def parse_sentence(self, text):
         """
