@@ -16,6 +16,7 @@ class Parse:
         self.stop_words = listOfStopWords.split(" ")
         #print(type(self.stop_words))
 
+    #This function is used for queries and tweets
     def parse_sentence(self, text):
         """
         This function tokenize, remove stop words and apply lower case for every word within the text
@@ -26,6 +27,7 @@ class Parse:
         text_tokens_without_stopwords = [w.lower() for w in text_tokens if w not in self.stop_words]
         return text_tokens_without_stopwords
 
+    #this function is used for the tweets
     def parse_doc(self, doc_as_list):
         """
         This function takes a tweet document as list and break it into different fields
