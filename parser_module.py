@@ -1,5 +1,6 @@
 import os
 import re
+from nltk.stem import PorterStemmer
 #from nltk.corpus import stopwords
 
 from nltk.tokenize import word_tokenize
@@ -58,6 +59,30 @@ class Parse:
         document = Document(tweet_id, tweet_date, full_text, url, retweet_text, retweet_url, quote_text,
                             quote_url, term_dict, doc_length)
         return document
+
+    #stemming - save the suffix
+    def stemming(text):
+        suffixWord = PorterStemmer()
+        listOfSuffix = text.split(' ')
+        for word in text:
+            listOfSuffix.append(suffixWord.stem(word))
+            listOfSuffix.remove(word)
+
+
+    #Punctuation
+    def punctuation(text):
+        #this list is not final
+        punctuationList = ['&',';','(',')','[',']','{','}','?','!'] #ignore them
+        listWithoutPunc = text.split(punctuationList)
+        for word in listWithoutPunc:
+            if (word == '.' or ',' or '/'):
+                numIndex = listWithoutPunc.index(word)
+                if(listWithoutPunc[numIndex-1].isnumeric() and listWithoutPunc[numIndex+1].isnumeric()):
+                    listWithoutPunc.append(listWithoutPunc[numIndex-1] + listWithoutPunc[numIndex] + listWithoutPunc[numIndex+1])
+                    listWithoutPunc.remove(listWithoutPunc[numIndex-1])
+                    listWithoutPunc.remove(listWithoutPunc[numIndex])
+                    listWithoutPunc.remove(listWithoutPunc[numIndex+1])
+
 
 
     @property
