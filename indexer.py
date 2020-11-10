@@ -12,7 +12,6 @@ class Indexer:
         :param document: a document need to be indexed.
         :return: -
         """
-        #isThatHere?
         document_dictionary = document.term_doc_dictionary
         # Go over each term in the doc
         for term in document_dictionary.keys():

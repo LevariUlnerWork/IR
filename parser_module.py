@@ -1,5 +1,6 @@
 import os
-from nltk.corpus import stopwords
+import re
+#from nltk.corpus import stopwords
 
 from nltk.tokenize import word_tokenize
 from document import Document
@@ -23,7 +24,8 @@ class Parse:
         :param text:
         :return:
         """
-        text_tokens = word_tokenize(text)
+        #Not using - text_tokens = word_tokenize(text)
+        text_tokens = self.tokenize_words
         text_tokens_without_stopwords = [w.lower() for w in text_tokens if w not in self.stop_words]
         return text_tokens_without_stopwords
 
@@ -56,3 +58,157 @@ class Parse:
         document = Document(tweet_id, tweet_date, full_text, url, retweet_text, retweet_url, quote_text,
                             quote_url, term_dict, doc_length)
         return document
+
+
+    @property
+    def tokenize_words(text):
+        listOfTokens = text.split(' ')
+        for wordToken in listOfTokens:
+            #tags
+            if(wordToken[0] == '@'):
+                listOfTokens.append("@")
+                listOfTokens.append(wordToken[1:])
+
+            #Hashtags
+            if (wordToken[0] == '#'):
+
+                if(wordToken.find("_") != -1):# if there is a '_'
+
+                    finalWord = "#" #Final Word: "#stayathome"
+                    wordToken = wordToken[1:] #now: "stay_at_home"
+
+                    #For case: "#Stay_At_Home" and "#stay_at_home"
+                    for partOfToken in wordToken.split('_'):
+                        #For case: "Stay_At_USA"
+                        if(partOfToken[1].isupper()):
+                            finalWord+=partOfToken
+                            listOfTokens.append(partOfToken)
+                        #for case: "#Stay_At_Home" and "#stay_at_home"
+                        else:
+                            finalWord+=partOfToken.lower()
+                            listOfTokens.append(partOfToken.lower())
+
+                    listOfTokens[listOfTokens.index("#"+wordToken)] = finalWord #Now we changed: "#stay_at_home" to "#stayathome"
+
+                else:
+                    #For case: "#StayAtHome"
+                    wordToken = wordToken[1:] #Remove '#'
+                    listOfFinal = re.findall('[A-Z][^A-Z]*',finalWord) #listOfFinal = [Stay,At,U,S,A] || [Stay,At,Home]
+                    correctWord = ""
+                    for j in listOfFinal:
+                        if(len(j) == 1):
+                            jFollower=listOfFinal.index(j)+1
+                            if(len(listOfFinal[jFollower]) == 1): #for case: USA
+                                correctWord = j
+                                while(len(listOfFinal[jFollower])==1):
+                                    correctWord+=listOfFinal[jFollower]
+                                    listOfFinal.remove(listOfFinal[jFollower])
+                                listOfFinal.append(correctWord)
+                            #After: [Stay,At,USA]
+
+                        else: # for "Stay"
+                            listOfFinal[listOfFinal.index[j]] = j.lower() #from Stay -> stay
+
+                    listOfTokens+=listOfFinal
+
+
+                    for i in listOfFinal:
+                        partOfToken.append(i.lower())
+                    listOfTokens[listOfTokens.index(wordToken)] = finalWord
+
+            #for case: 10.6 precent
+            if( wordToken == "precent" or wordToken == "precentage"):
+                wordTokenPlace=listOfTokens.index(j)
+                if(wordTokenPlace != 0):
+                    listOfTokens[wordTokenPlace-1] += "%"
+                    listOfTokens.remove(wordToken)
+
+            #for case: 123 Thousand
+            if(wordToken == "Thousand" or wordToken == "thousand" or wordToken == "Thousands" or wordToken == "thousands"):
+                thousandIndex = listOfTokens.index(wordToken)
+                if(thousandIndex!=0):
+
+                    #for case: 123 Thousand (1-999)
+                    if listOfTokens[thousandIndex-1].isnumeric():
+                        listOfTokens[thousandIndex - 1] = listOfTokens[thousandIndex-1]+"K"
+                        listOfTokens.remove(wordToken)
+
+                    #for case: 123K Thousand
+                    #if listOfTokens[thousandIndex-1][0:len(listOfTokens[thousandIndex-1])-1].isnumeric():
+                    #    if():
+                    #        listOfTokens[thousandIndex - 1] = listOfTokens[thousandIndex-1][0:len(listOfTokens[thousandIndex-1])-1] + "M"
+
+                #for case: Thousand -> 1K
+                else:
+                    listOfTokens[thousandIndex] = "1K"
+
+            #for case: 123 Million
+            if(wordToken == "Million" or wordToken == "million" or wordToken == "Millions" or wordToken == "millions"):
+                millionIndex = listOfTokens.index(wordToken)
+                if(millionIndex!=0):
+
+                    #for case: 123 Thousand (1-999)
+                    if listOfTokens[millionIndex-1].isnumeric():
+                        listOfTokens[millionIndex - 1] = listOfTokens[millionIndex-1]+"M"
+                        listOfTokens.remove(wordToken)
+
+                    #for case: 123K Thousand
+                    #if listOfTokens[thousandIndex-1][0:len(listOfTokens[thousandIndex-1])-1].isnumeric():
+                    #    if():
+                    #        listOfTokens[thousandIndex - 1] = listOfTokens[thousandIndex-1][0:len(listOfTokens[thousandIndex-1])-1] + "M"
+
+                #for case: Thousand -> 1K
+                else:
+                    listOfTokens[millionIndex] = "1M"
+
+            #for case: 123 Billion
+            if(wordToken == "Billion" or wordToken == "billion" or wordToken == "Billions" or wordToken == "billions"):
+                billionIndex = listOfTokens.index(wordToken)
+                if(billionIndex!=0):
+
+                    #for case: 123 Billion (1-999)
+                    if listOfTokens[billionIndex-1].isnumeric():
+                        listOfTokens[billionIndex - 1] = listOfTokens[billionIndex-1]+"B"
+                        listOfTokens.remove(wordToken)
+
+                    #for case: 123K Thousand
+                    #if listOfTokens[thousandIndex-1][0:len(listOfTokens[thousandIndex-1])-1].isnumeric():
+                    #    if():
+                    #        listOfTokens[thousandIndex - 1] = listOfTokens[thousandIndex-1][0:len(listOfTokens[thousandIndex-1])-1] + "M"
+
+                #for case: Billion -> 1B
+                else:
+                    listOfTokens[billionIndex] = "1B"
+
+            #for case: Numbers
+            if(wordToken.replace(',','').isdigit() or wordToken.replace('.','',1).isdigit()):
+
+                wordTokenNumber = float(wordToken)
+
+                #if there are more than 3 digit before the point
+                numberOfLoops=0
+                varInt = ""
+                while(wordTokenNumber/1000 > 1):
+                    wordTokenNumber /= 1000
+                    numberOfLoops += 1
+
+                #Add K
+                if(numberOfLoops == 1):
+                    varInt = "K"
+
+                #Add M
+                if (numberOfLoops == 2):
+                    varInt = "M"
+
+                #Add B
+                if(numberOfLoops == 3):
+                    varInt = "B"
+
+
+                listOfTokens[listOfTokens.index(wordToken)] = "%.3f" % round(wordTokenNumber,3) + varInt
+
+
+
+
+
+        return listOfTokens
