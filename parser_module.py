@@ -83,7 +83,12 @@ class Parse:
                     listWithoutPunc.remove(listWithoutPunc[numIndex])
                     listWithoutPunc.remove(listWithoutPunc[numIndex+1])
 
-
+    def isfloat(value):
+        try:
+            float(value)
+            return True
+        except ValueError:
+            return False
 
     @property
     def tokenize_words(text):
@@ -205,32 +210,63 @@ class Parse:
                 else:
                     listOfTokens[billionIndex] = "1B"
 
-            #for case: Numbers
-            if(wordToken.replace(',','').isdigit() or wordToken.replace('.','',1).isdigit()):
+            #for case: 3/4 and 6 3/4
+            if("/" in wordToken):
+                numerator = wordToken[:wordToken.find("/")]
+                denominator = wordToken[wordToken.find("/"):]
+                wordNumber = int(numerator) / int(denominator)
+
+                #for case: 6 3/4
+                if text.isfloat(listOfTokens[listOfTokens.index(wordToken) - 1]):
+                    #6 3/4 -> 6.75
+                    beforNumber = int(listOfTokens[listOfTokens.index(wordToken)-1])+wordNumber
+                    listOfTokens[listOfTokens.index(wordToken) - 1] = str(beforNumber)
+                    listOfTokens.remove(wordToken)
+                    # Now the new number is the token, so it would enter to the Number case
+                    wordToken=str(beforNumber)
+
+            # for case: Numbers
+            if (wordToken.replace(',', '').isdigit() or wordToken.replace('.', '', 1).isdigit()):
 
                 wordTokenNumber = float(wordToken)
 
-                #if there are more than 3 digit before the point
-                numberOfLoops=0
+                # if there are more than 3 digit before the point
+                numberOfLoops = 0
                 varInt = ""
-                while(wordTokenNumber/1000 > 1):
+                while (wordTokenNumber / 1000 > 1):
                     wordTokenNumber /= 1000
                     numberOfLoops += 1
 
-                #Add K
-                if(numberOfLoops == 1):
+                # Add K
+                if (numberOfLoops == 1):
                     varInt = "K"
 
-                #Add M
+                # Add M
                 if (numberOfLoops == 2):
                     varInt = "M"
 
-                #Add B
-                if(numberOfLoops == 3):
+                # Add B
+                if (numberOfLoops == 3):
                     varInt = "B"
 
+                listOfTokens[listOfTokens.index(wordToken)] = "%.3f" % round(wordTokenNumber, 3) + varInt
 
-                listOfTokens[listOfTokens.index(wordToken)] = "%.3f" % round(wordTokenNumber,3) + varInt
+        #Change the words to Lower case or Upper Case
+        for wordBeChange in listOfTokens:
+
+            #for case: Max -> MAX/max
+            if len(wordBeChange) > 1 and wordBeChange[0].isupper() and not wordBeChange[1].isupper():
+
+                #for case: Max -> max
+                if(wordBeChange.lower() in listOfTokens):
+                    listOfTokens[listOfTokens.index(wordBeChange)] = wordBeChange.lower()
+
+                #for case: Max -> MAX
+                else:
+                    listOfTokens[listOfTokens.index(wordBeChange)] = wordBeChange.upper()
+
+
+
 
 
 
