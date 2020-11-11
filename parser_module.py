@@ -72,7 +72,7 @@ class Parse:
     #Punctuation
     def punctuation(text):
         #this list is not final
-        punctuationList = ['&',';','(',')','[',']','{','}','?','!'] #ignore them
+        punctuationList = [' ','&',';','(',')','[',']','{','}','?','!'] #ignore them
         listWithoutPunc = text.split(punctuationList)
         for word in listWithoutPunc:
             if (word == '.' or ',' or '/'):
@@ -82,6 +82,10 @@ class Parse:
                     listWithoutPunc.remove(listWithoutPunc[numIndex-1])
                     listWithoutPunc.remove(listWithoutPunc[numIndex])
                     listWithoutPunc.remove(listWithoutPunc[numIndex+1])
+                else:
+                    listWithoutPunc = text.split(word)
+
+        return listWithoutPunc
 
     def isfloat(value):
         try:
