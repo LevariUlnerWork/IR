@@ -26,7 +26,7 @@ class Parse:
         :return:
         """
         #Not using - text_tokens = word_tokenize(text)
-        text_tokens = self.tokenize_words
+        text_tokens = Parse.tokenize_words(text)
         text_tokens_without_stopwords = [w.lower() for w in text_tokens if w not in self.stop_words]
         return text_tokens_without_stopwords
 
@@ -72,7 +72,7 @@ class Parse:
     #Punctuation
     def punctuation(text):
 
-        listWithoutPunc = []
+        listWithoutPunc = [""]
         domain=""
 
         # for case:www.abc.com -> URL
@@ -82,13 +82,25 @@ class Parse:
             domain=domain[0] #domain = "t.co"
 
         #this list is not final
-        punctuationList = [' ','&',';','(',')','[',']','{','}','?','!', '"' , ':'] #ignore them
-        listWithoutPunc += text.split(punctuationList)
+        #punctuationList = [' ','&',';','(',')','[',']','{','}','?','!', '"' , ':'] #ignore them=
+        newList=[s.strip() for s in re.split(" |&|;|!|:| ", text)]# delete:' ','&',';',':','!'
+        listWithoutPunc += newList
 
         for word in listWithoutPunc:
+            wordBeforeChange = word
+            word = word.replace('?','')
+            word = word.replace('(', '')
+            word = word.replace(')', '')
+            word = word.replace('[', '')
+            word = word.replace(']', '')
+            word = word.replace('{', '')
+            word = word.replace('}', '')
+            # word = word.replace('"', '') #should delete " ?
+            listWithoutPunc[listWithoutPunc.index(wordBeforeChange)] = word
+            wordBeforeChange = word
             if (('.' or ',' or '/') in word and len(word)>1):
                 numIndex = listWithoutPunc.index(word)
-                seperateWordList = word.split('.' , ',' , '/')
+                seperateWordList = [s.strip() for s in re.split(" /| . |, ", word)]
                 isNumber = True
                 for inWord in seperateWordList:
                     if not inWord.isdigit():
@@ -97,12 +109,21 @@ class Parse:
                 if(isNumber):
                     if(',' in word):
                         listWithoutPunc[numIndex] = word.replace(',','')
-                #for case: "His/Her"
+
+                #for case: go.
+                elif(len(seperateWordList) == 1):
+                    word=word.replace(',', '')
+                    word=word.replace('.', '')
+                    word=word.replace('/', '')
+                    listWithoutPunc[listWithoutPunc.index(wordBeforeChange)] = word
+                    wordBeforeChange = word
+
+                # for case: "His/Her"
                 else:
                     listWithoutPunc.remove(word)
                     listWithoutPunc += seperateWordList
 
-        return listWithoutPunc+domain
+        return listWithoutPunc+[domain]
 
     def isfloat(value):
         try:
@@ -111,9 +132,8 @@ class Parse:
         except ValueError:
             return False
 
-    @property
     def tokenize_words(text):
-        listOfTokens = text.punctuation()
+        listOfTokens = Parse.punctuation(text)
         for wordToken in listOfTokens:
             #tags
             if(wordToken[0] == '@'):
@@ -239,7 +259,7 @@ class Parse:
 
                 #for case: 6 3/4
                 wordBefore = listOfTokens[listOfTokens.index(wordToken) - 1]
-                if text.isfloat(wordBefore):
+                if Parse.isfloat(wordBefore):
                     #6 3/4 -> 6.75
                     beforNumber = float(listOfTokens[listOfTokens.index(wordToken)-1])+wordNumber
                     listOfTokens[listOfTokens.index(wordToken) - 1] = str(beforNumber)
@@ -248,7 +268,7 @@ class Parse:
                     wordToken=str(beforNumber)
 
                 #for case: 6K 3/4 // 6M 3/4 // 6B 3/4
-                if text.isfloat(wordBefore[:len(wordBefore) - 1] and (wordBefore[len(wordBefore) - 1] == "K" or wordBefore[len(wordBefore) - 1] == "M" or wordBefore[len(wordBefore) - 1] == "B")):
+                if Parse.isfloat(wordBefore[:len(wordBefore) - 1] and (wordBefore[len(wordBefore) - 1] == "K" or wordBefore[len(wordBefore) - 1] == "M" or wordBefore[len(wordBefore) - 1] == "B")):
                     beforNumber = int(listOfTokens[listOfTokens.index(wordToken) - 1]) + wordNumber
                     if(wordBefore[len(wordBefore) - 1] == "K"):
                         beforNumber *= 1000
@@ -304,12 +324,5 @@ class Parse:
                 #for case: Max -> MAX
                 else:
                     listOfTokens[listOfTokens.index(wordBeChange)] = wordBeChange.upper()
-
-
-
-
-
-
-
 
         return listOfTokens
