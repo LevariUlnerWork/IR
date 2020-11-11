@@ -269,7 +269,7 @@ class Parse:
                     # Now the new number is the token, so it would enter to the Number case
                     wordToken=str(beforNumber)
 
-                #for case: 6K 3/4 // 6M 3/4 // 6B 3/4
+                #for case: 6K 3/4 // 6M 3/4 // 6B 3/4 --------------------------- CHECK-------------------------
                 if Parse.isfloat(wordBefore[:len(wordBefore) - 1] and (wordBefore[len(wordBefore) - 1] == "K" or wordBefore[len(wordBefore) - 1] == "M" or wordBefore[len(wordBefore) - 1] == "B")):
                     beforNumber = int(listOfTokens[listOfTokens.index(wordToken) - 1]) + wordNumber
                     if(wordBefore[len(wordBefore) - 1] == "K"):
