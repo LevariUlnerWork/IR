@@ -230,6 +230,12 @@ class Parse:
                 if text.isfloat(wordBefore[:len(wordBefore) - 1] and (wordBefore[len(wordBefore) - 1] == "K" or wordBefore[len(wordBefore) - 1] == "M" or wordBefore[len(wordBefore) - 1] == "B")):
                     numberAmount = wordBefore[len(wordBefore) - 1]
                     beforNumber = int(listOfTokens[listOfTokens.index(wordToken) - 1]) + wordNumber
+                    if(wordBefore[len(wordBefore) - 1] == "K"):
+                        beforNumber *= 1000
+                    if(wordBefore[len(wordBefore) - 1] == "M"):
+                        beforNumber *= 1000000
+                    if(wordBefore[len(wordBefore) - 1] == "B"):
+                        beforNumber *= 1000000000
                     listOfTokens[listOfTokens.index(wordToken) - 1] = str(beforNumber) + numberAmount
                     listOfTokens.remove(wordToken)
                     # Now the new number is the token, so it would enter to the Number case
