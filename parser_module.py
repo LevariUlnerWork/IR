@@ -75,15 +75,21 @@ class Parse:
         punctuationList = [' ','&',';','(',')','[',']','{','}','?','!'] #ignore them
         listWithoutPunc = text.split(punctuationList)
         for word in listWithoutPunc:
-            if (word == '.' or ',' or '/'):
+            if (('.' or ',' or '/') in word and len(word)>1):
                 numIndex = listWithoutPunc.index(word)
-                if(listWithoutPunc[numIndex-1].isnumeric() and listWithoutPunc[numIndex+1].isnumeric()):
-                    listWithoutPunc.append(listWithoutPunc[numIndex-1] + listWithoutPunc[numIndex] + listWithoutPunc[numIndex+1])
-                    listWithoutPunc.remove(listWithoutPunc[numIndex-1])
-                    listWithoutPunc.remove(listWithoutPunc[numIndex])
-                    listWithoutPunc.remove(listWithoutPunc[numIndex+1])
+                seperateWordList = word.split('.' , ',' , '/')
+                isNumber = True
+                for inWord in seperateWordList:
+                    if not inWord.isdigit():
+                        isNumber=False
+                #for case: 13,333
+                if(isNumber):
+                    if(',' in word):
+                        listWithoutPunc[numIndex] = word.replace(',','')
+                #for case: "His/Her"
                 else:
-                    listWithoutPunc = text.split(word)
+                    listWithoutPunc.remove(word)
+                    listWithoutPunc += seperateWordList
 
         return listWithoutPunc
 
@@ -96,7 +102,7 @@ class Parse:
 
     @property
     def tokenize_words(text):
-        listOfTokens = text.split(' ')
+        listOfTokens = text.punctuation()
         for wordToken in listOfTokens:
             #tags
             if(wordToken[0] == '@'):
