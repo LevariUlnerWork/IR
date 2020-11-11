@@ -72,7 +72,7 @@ class Parse:
     #Punctuation
     def punctuation(text):
         #this list is not final
-        punctuationList = [' ','&',';','(',')','[',']','{','}','?','!'] #ignore them
+        punctuationList = [' ','&',';','(',')','[',']','{','}','?','!', '"' , ':'] #ignore them
         listWithoutPunc = text.split(punctuationList)
         for word in listWithoutPunc:
             if (('.' or ',' or '/') in word and len(word)>1):
