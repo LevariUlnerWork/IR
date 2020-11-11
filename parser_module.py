@@ -217,13 +217,28 @@ class Parse:
                 wordNumber = int(numerator) / int(denominator)
 
                 #for case: 6 3/4
-                if text.isfloat(listOfTokens[listOfTokens.index(wordToken) - 1]):
+                wordBefore = listOfTokens[listOfTokens.index(wordToken) - 1]
+                if text.isfloat(wordBefore):
                     #6 3/4 -> 6.75
                     beforNumber = int(listOfTokens[listOfTokens.index(wordToken)-1])+wordNumber
                     listOfTokens[listOfTokens.index(wordToken) - 1] = str(beforNumber)
                     listOfTokens.remove(wordToken)
                     # Now the new number is the token, so it would enter to the Number case
                     wordToken=str(beforNumber)
+
+                #for case: 6K 3/4 // 6M 3/4 // 6B 3/4
+                if text.isfloat(wordBefore[:len(wordBefore) - 1] and (wordBefore[len(wordBefore) - 1] == "K" or wordBefore[len(wordBefore) - 1] == "M" or wordBefore[len(wordBefore) - 1] == "B")):
+                    numberAmount = wordBefore[len(wordBefore) - 1]
+                    beforNumber = int(listOfTokens[listOfTokens.index(wordToken) - 1]) + wordNumber
+                    listOfTokens[listOfTokens.index(wordToken) - 1] = str(beforNumber) + numberAmount
+                    listOfTokens.remove(wordToken)
+                    # Now the new number is the token, so it would enter to the Number case
+                    wordToken = str(beforNumber) + numberAmount
+
+                #for case: 3/4
+                else:
+                    listOfTokens[listOfTokens.index(wordToken)] = str(wordNumber)
+
 
             # for case: Numbers
             if (wordToken.replace(',', '').isdigit() or wordToken.replace('.', '', 1).isdigit()):
