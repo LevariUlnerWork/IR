@@ -167,6 +167,8 @@ class Parse:
                     listOfFinal = re.findall('[A-Z][^A-Z]*',finalWord) #listOfFinal = [Stay,At,U,S,A] || [Stay,At,Home]
                     correctWord = ""
                     for j in listOfFinal:
+                        if(len(listOfFinal) == 1):
+                            listOfFinal.append(j)
                         if(len(j) == 1):
                             jFollower=listOfFinal.index(j)+1
                             if(len(listOfFinal[jFollower]) == 1): #for case: USA
