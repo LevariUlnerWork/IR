@@ -71,9 +71,20 @@ class Parse:
 
     #Punctuation
     def punctuation(text):
+
+        listWithoutPunc = []
+        domain=""
+
+        # for case:www.abc.com -> URL
+        if (' {"https:// ') in text:
+            domain = str.split('//') #domain = [{"https:", "t.co/sdfs..."]
+            domain = domain[1].split('/') #domai = ["t.co", "sdfs"...]
+            domain=domain[0] #domain = "t.co"
+
         #this list is not final
         punctuationList = [' ','&',';','(',')','[',']','{','}','?','!', '"' , ':'] #ignore them
-        listWithoutPunc = text.split(punctuationList)
+        listWithoutPunc += text.split(punctuationList)
+
         for word in listWithoutPunc:
             if (('.' or ',' or '/') in word and len(word)>1):
                 numIndex = listWithoutPunc.index(word)
@@ -91,7 +102,7 @@ class Parse:
                     listWithoutPunc.remove(word)
                     listWithoutPunc += seperateWordList
 
-        return listWithoutPunc
+        return listWithoutPunc+domain
 
     def isfloat(value):
         try:
@@ -262,7 +273,7 @@ class Parse:
                 # if there are more than 3 digit before the point
                 numberOfLoops = 0
                 varInt = ""
-                while (wordTokenNumber / 1000 > 1):
+                while wordTokenNumber / 1000 > 1:
                     wordTokenNumber /= 1000
                     numberOfLoops += 1
 
