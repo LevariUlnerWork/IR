@@ -1,6 +1,7 @@
 class ConfigClass:
     def __init__(self):
-        self.corpusPath = 'C:/Users/levco/PycharmProjects/Search_Engine/Data'
+        self.corpusPath = 'C:/Users/User/PycharmProjects/IR/Data'
+        #'C:/Users/levco/PycharmProjects/Search_Engine/Data'
         self.savedFileMainFolder = ''
         self.saveFilesWithStem = self.savedFileMainFolder + "/WithStem"
         self.saveFilesWithoutStem = self.savedFileMainFolder + "/WithoutStem"
