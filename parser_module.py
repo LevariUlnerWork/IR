@@ -2,7 +2,6 @@ import os
 import re
 from nltk.stem import PorterStemmer
 #from nltk.corpus import stopwords
-
 from nltk.tokenize import word_tokenize
 from document import Document
 
@@ -26,8 +25,16 @@ class Parse:
         :return:
         """
         #Not using - text_tokens = word_tokenize(text)
+
         text_tokens = Parse.tokenize_words(text)
+
+
+        #if the len of query without stop-words is 0 - dont use stop-words -----------------CHECK------------------------
+        #if(len(w.lower() for w in query if w not in self.stop_words) == 0):
+        #    text_tokens_without_stopwords = [w.lower() for w in text_tokens]
+        #else:
         text_tokens_without_stopwords = [w.lower() for w in text_tokens if w not in self.stop_words]
+
         return text_tokens_without_stopwords
 
     #this function is used for the tweets
@@ -328,3 +335,29 @@ class Parse:
                     listOfTokens[listOfTokens.index(wordBeChange)] = wordBeChange.upper()
 
         return listOfTokens
+
+
+    def identifyTerms(queryTokens, docTokens):
+        term = ""
+        termList=[]
+        i = 0
+        j = 0
+        for i in queryTokens[i]:
+            for j in docTokens[j]:
+                if(queryTokens[i] == docTokens[j]):
+                    found = True
+                    l=1
+                    while(found):
+                        if(queryTokens[i+l] == docTokens[j+l]):
+                            term += queryTokens[i] + queryTokens[i+l]
+                            l += 1
+                            i += 1
+                            j += 1
+                        else:
+                            found = False
+                            termList.append(term)
+        #should I add this list to queryTerms? I think yes bcz the runtime will get shorter
+        return termList
+
+
+
