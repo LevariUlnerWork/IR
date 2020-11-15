@@ -21,13 +21,11 @@ class Parse:
     def parse_sentence(self, text):
         """
         This function tokenize, remove stop words and apply lower case for every word within the text
-        :param text:
-        :return:
+        :param text: Every tweet/query
+        :return: list of terms
         """
         #Not using - text_tokens = word_tokenize(text)
-
         text_tokens = Parse.tokenize_words(text)
-
 
         #if the len of query without stop-words is 0 - dont use stop-words -----------------CHECK------------------------
         #if(len(w.lower() for w in query if w not in self.stop_words) == 0):
@@ -98,34 +96,36 @@ class Parse:
         newList=[s.strip() for s in re.split(" |&|;|!|:| ", text)]# delete:' ','&',';',':','!'
         listWithoutPunc += newList
 
-        if (('?' or '(' or ')' or '[' or ']' or '{' or '}') in text):
-            for word in listWithoutPunc:
-                word.replace('?', '')
-                word.replace('(', '')
-                word.replace(')', '')
-                word.replace('[', '')
-                word.replace(']', '')
-                word.replace('{', '')
-                word.replace('}', '')
+        #I delete this because it changes nothing:
+        #if (('?' or '(' or ')' or '[' or ']' or '{' or '}') in text):
+        #    for word in listWithoutPunc:
+        #        word.replace('?', '')
+        #        word.replace('(', '')
+        #        word.replace(')', '')
+        #        word.replace('[', '')
+        #        word.replace(']', '')
+        #        word.replace('{', '')
+        #        word.replace('}', '')
 
-        #for word in listWithoutPunc:
-            #wordBeforeChange = word
-            #word = word.replace('?','')
-            #word = word.replace('(', '')
-            #word = word.replace(')', '')
-            #word = word.replace('[', '')
-            #word = word.replace(']', '')
-            #word = word.replace('{', '')
-            #word = word.replace('}', '')
-            # word = word.replace('"', '') #should delete " ?
-            #listWithoutPunc[listWithoutPunc.index(wordBeforeChange)] = word
-            #wordBeforeChange = word #delete this line?
+        for word in listWithoutPunc:
+            wordBeforeChange = word
+            word = word.replace('?','')
+            word = word.replace('(', '')
+            word = word.replace(')', '')
+            word = word.replace('[', '')
+            word = word.replace(']', '')
+            word = word.replace('{', '')
+            word = word.replace('}', '')
+            word = word.replace("\'", '') # for case: D\'ont -> Dont
+            word = word.replace('😉', '') # for smiles
+            word = word.replace("\n", '')
+            listWithoutPunc[listWithoutPunc.index(wordBeforeChange)] = word
+            wordBeforeChange = word # This is the new zero time of the word
 
-            if(('.' or ',' or '/') in text):
+            if(('.' or ',' or '/') in word):
                 if (('.' or ',' or '/') in word and len(word) > 1):
                     numIndex = listWithoutPunc.index(word)
-                    seperateWordList = word.split('/', '.', ',')
-                    # seperateWordList = [s.strip() for s in re.split(" /| . |, ", word)]
+                    seperateWordList = [s.strip() for s in re.split(" /| . |, ", word)]
                     isNumber = True
                     for inWord in seperateWordList:
                         if not inWord.isdigit():
@@ -147,8 +147,13 @@ class Parse:
                     else:
                         listWithoutPunc.remove(word)
                         listWithoutPunc += seperateWordList
+            if(word == ''): # Delete non words
+                listWithoutPunc.remove('')
 
-        return listWithoutPunc+[domain]
+        if(len(domain)>0):
+            return listWithoutPunc+[domain]
+        else:
+            return listWithoutPunc
 
     def isfloat(value):
         try:
@@ -170,18 +175,16 @@ class Parse:
                     listOfTokens.append(wordList[1])
 
                 #tags
-                if(wordToken[0] == '@'):
+                if(wordToken[0] == '@' and len(wordToken)!=1):
                     listOfTokens.append("@")
                     listOfTokens.append(wordToken[1:])
 
                 #Hashtags
-                if (wordToken[0] == '#'):
+                if (wordToken[0] == '#' and not wordToken[1:].isdigit()):
 
+                    finalWord = "#"  # Final Word: "#stayathome"
                     if(wordToken.find("_") != -1):# if there is a '_'
-
-                        finalWord = "#" #Final Word: "#stayathome"
                         wordToken = wordToken[1:] #now: "stay_at_home"
-
                         #For case: "#Stay_At_Home" and "#stay_at_home"
                         for partOfToken in wordToken.split('_'):
                             #For case: "Stay_At_USA"
