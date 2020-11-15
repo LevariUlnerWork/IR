@@ -116,34 +116,34 @@ class Parse:
             word = word.replace(']', '')
             word = word.replace('{', '')
             word = word.replace('}', '')
+            word = word.replace('\n', '')
+            word = word.replace('\t', '')
             word = word.replace("\'", '') # for case: D\'ont -> Dont
             word = word.replace('😉', '') # for smiles
-            word = word.replace("\n", '')
             listWithoutPunc[listWithoutPunc.index(wordBeforeChange)] = word
-            wordBeforeChange = word # This is the new zero time of the word
+            numIndex = listWithoutPunc.index(word)
 
-            if(('.' or ',' or '/') in word):
-                if (('.' or ',' or '/') in word and len(word) > 1):
-                    numIndex = listWithoutPunc.index(word)
-                    seperateWordList = [s.strip() for s in re.split(" /| . |, ", word)]
+            if(('.' or ',' or '/') in word and len(word) > 1):
+                for i in [',','.','/']:
+                    seperateWordList = word.split(i)
                     isNumber = True
                     for inWord in seperateWordList:
                         if not inWord.isdigit():
                             isNumber = False
                     # for case: 13,333
-                    if (isNumber):
+                    if (isNumber and i == ','):
                         if (',' in word):
                             listWithoutPunc[numIndex] = word.replace(',', '')
-
-                    # for case: go.
+                        else: # 123.33 | 213/2312
+                            continue
+                    # for case: go. | go,
                     elif (len(seperateWordList) == 1):
                         word = word.replace(',', '')
                         word = word.replace('.', '')
                         word = word.replace('/', '')
-                        listWithoutPunc[listWithoutPunc.index(wordBeforeChange)] = word
-                        wordBeforeChange = word
+                        listWithoutPunc[numIndex] = word
 
-                    # for case: "His/Her"
+                    # for case: "His/Her | his,her"
                     else:
                         listWithoutPunc.remove(word)
                         listWithoutPunc += seperateWordList
@@ -200,6 +200,7 @@ class Parse:
 
                     else:
                         #For case: "#StayAtHome"
+                        firstWord = wordToken
                         wordToken = wordToken[1:] #Remove '#'
                         listOfFinal = re.findall('[A-Z][^A-Z]*',finalWord) #listOfFinal = [Stay,At,U,S,A] || [Stay,At,Home]
                         correctWord = ""
@@ -224,7 +225,7 @@ class Parse:
 
                         for i in listOfFinal:
                             partOfToken.append(i.lower())
-                        listOfTokens[listOfTokens.index(wordToken)] = finalWord
+                        listOfTokens[listOfTokens.index(firstWord)] = finalWord
 
                 #for case: 10.6 precent
                 if(wordToken == "precent" or wordToken == "precentage"):
@@ -325,7 +326,7 @@ class Parse:
                         listOfTokens[listOfTokens.index(wordToken)] = str(wordNumber)
 
                 # for case: Numbers
-                if (wordToken.replace(',', '').isdigit() or wordToken.replace('.', '', 1).isdigit()):
+                if (wordToken.replace('.', '', 1).isdigit()):
 
                     wordTokenNumber = float(wordToken)
 
