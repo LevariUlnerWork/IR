@@ -77,15 +77,13 @@ class Parse:
     #Punctuation
     def punctuation(text):
 
-        listWithoutPunc = [""]
-        wordList = text.split(' ')
+        listWithoutPunc = text.split(' ')
         #domain=""
         domain=[]
         # for case:www.abc.com -> URL
         if 'https://' in text:
-            for word in wordList:
+            for word in listWithoutPunc:
                 if ('https://' in word):
-                    wordIndex = wordList.index(word)
                     domain = word.split('//')  # domain = [{"https:", "t.co/sdfs..."]
                     domain = domain[1].split('/')  # domai = ["t.co", "sdfs"...]
                     domain = domain[0]  # domain = "t.co"
@@ -93,8 +91,6 @@ class Parse:
 
         #this list is not final
         #punctuationList = [' ','&',';','(',')','[',']','{','}','?','!', '"' , ':'] #ignore them=
-        newList=[s.strip() for s in re.split(" |&|;|!|:| ", text)]# delete:' ','&',';',':','!'
-        listWithoutPunc += newList
 
         #I delete this because it changes nothing:
         #if (('?' or '(' or ')' or '[' or ']' or '{' or '}') in text):
@@ -106,49 +102,65 @@ class Parse:
         #        word.replace(']', '')
         #        word.replace('{', '')
         #        word.replace('}', '')
-
         for word in listWithoutPunc:
-            wordBeforeChange = word
-            word = word.replace('?','')
-            word = word.replace('(', '')
-            word = word.replace(')', '')
-            word = word.replace('[', '')
-            word = word.replace(']', '')
-            word = word.replace('{', '')
-            word = word.replace('}', '')
-            word = word.replace('\n', '')
-            word = word.replace('\t', '')
-            word = word.replace("\'", '') # for case: D\'ont -> Dont
-            word = word.replace('😉', '') # for smiles
-            listWithoutPunc[listWithoutPunc.index(wordBeforeChange)] = word
-            numIndex = listWithoutPunc.index(word)
+            if("https" not in word):
+                numIndex = listWithoutPunc.index(word)
+                #if (('?' or '(' or ')' or '[' or ']' or '{' or '}' or "\n" or "\t" or "\'" or '😉' or ':' or ';' or '!' or "'") in text):
+                word = word.replace('?','')
+                word = word.replace('&', '')
+                word = word.replace(';', '')
+                word = word.replace(':', '')
+                word = word.replace("'", '')
+                word = word.replace('(', '')
+                word = word.replace(')', '')
+                word = word.replace('[', '')
+                word = word.replace(']', '')
+                word = word.replace('{', '')
+                word = word.replace('}', '')
+                word = word.replace('\n', '')
+                word = word.replace('\t', '')
+                word = word.replace("\'", '') # for case: D\'ont -> Dont
+                word = word.replace('😉', '') # for smiles
+                listWithoutPunc[numIndex] = word
+                wordBeforeChange = word
 
-            if(('.' or ',' or '/') in word and len(word) > 1):
-                for i in [',','.','/']:
-                    seperateWordList = word.split(i)
-                    isNumber = True
-                    for inWord in seperateWordList:
-                        if not inWord.isdigit():
-                            isNumber = False
-                    # for case: 13,333
-                    if (isNumber and i == ','):
-                        if (',' in word):
-                            listWithoutPunc[numIndex] = word.replace(',', '')
-                        else: # 123.33 | 213/2312
+
+                if(('.' or ',' or '/' or '-') in word and len(word) > 1):
+                    for i in [',','.','/','-']:
+                        seperateWordList = word.split(i)
+                        isNumber = True
+                        for inWord in seperateWordList:
+                            if not inWord.isdigit():
+                                isNumber = False
+                        # for case: 13,333
+                        if (isNumber and i == ','):
+                            if (',' in word):
+                                listWithoutPunc[numIndex] = word.replace(',', '')
+                            else: # 123.33 | 213/2312
+                                continue
+                        # for case: go. | go,
+                        elif (len(seperateWordList) >= 2):
+                            if(len(seperateWordList[1]) == 0):
+                                if (',' in word and i == ','):
+                                    word = word.replace(',', '')
+                                if ('.' in word and i == '.'):
+                                    word = word.replace('.', '')
+                                if ('/' in word and i == '/'):
+                                    word = word.replace('/', '')
+                                if ('-' in word and i == '-'):
+                                    word = word.replace('-', '')
+                                listWithoutPunc[numIndex] = word
+                                wordBeforeChange = word
+                            else:
+                                # for case: "His/Her | his,her"
+                                listWithoutPunc.pop(numIndex)
+                                listWithoutPunc += seperateWordList
+                        else:
                             continue
-                    # for case: go. | go,
-                    elif (len(seperateWordList) == 1):
-                        word = word.replace(',', '')
-                        word = word.replace('.', '')
-                        word = word.replace('/', '')
-                        listWithoutPunc[numIndex] = word
-
-                    # for case: "His/Her | his,her"
-                    else:
-                        listWithoutPunc.remove(word)
-                        listWithoutPunc += seperateWordList
-            if(word == ''): # Delete non words
-                listWithoutPunc.remove('')
+                if(word == ''): # Delete non words
+                    listWithoutPunc.remove('')
+            else: # Delete urls
+                listWithoutPunc.remove(word)
 
         if(len(domain)>0):
             return listWithoutPunc+[domain]
@@ -168,12 +180,6 @@ class Parse:
             #if('\' in wordToken): ----------------------CHECK-------------------------------
 
             if(len(wordToken) > 0):
-
-                if('-' in wordToken):
-                    wordList = wordToken.split('-')
-                    listOfTokens.append(wordList[0])
-                    listOfTokens.append(wordList[1])
-
                 #tags
                 if(wordToken[0] == '@' and len(wordToken)!=1):
                     listOfTokens.append("@")
@@ -291,10 +297,14 @@ class Parse:
                     else:
                         listOfTokens[billionIndex] = "1B"
 
+                """
+                #I deleted it because all the numbers were... dates!
                 #for case: 3/4 and 6 3/4
                 if("/" in wordToken):
                     numerator = wordToken[:wordToken.find("/")]
                     denominator = wordToken[wordToken.find("/")+1:]
+                    if(not (Parse.isfloat(numerator) and Parse.isfloat(denominator))):
+                        continue
                     wordNumber = float(numerator) / float(denominator)
 
                    #for case: 6 3/4
@@ -324,7 +334,7 @@ class Parse:
                     #for case: 3/4
                     else:
                         listOfTokens[listOfTokens.index(wordToken)] = str(wordNumber)
-
+                """
                 # for case: Numbers
                 if (wordToken.replace('.', '', 1).isdigit()):
 
