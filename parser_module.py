@@ -194,7 +194,7 @@ class Parse:
                         #For case: "#Stay_At_Home" and "#stay_at_home"
                         for partOfToken in wordToken.split('_'):
                             #For case: "Stay_At_USA"
-                            if(partOfToken[1].isupper()):
+                            if(partOfToken[1].isupper()): #TODO: call for number too
                                 finalWord+=partOfToken
                                 listOfTokens.append(partOfToken)
                             #for case: "#Stay_At_Home" and "#stay_at_home"
