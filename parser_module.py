@@ -120,7 +120,7 @@ class Parse:
                 word = word.replace('\n', '')
                 word = word.replace('\t', '')
                 word = word.replace("\'", '') # for case: D\'ont -> Dont
-                word = word.replace('😉', '') # for smiles
+                word = word.encode("ascii","ignore").decode() # delete all illegal characters like emojies
                 listWithoutPunc[numIndex] = word
                 wordBeforeChange = word
 
