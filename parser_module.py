@@ -105,6 +105,7 @@ class Parse:
         for word in listWithoutPunc:
             if("https" not in word):
                 numIndex = listWithoutPunc.index(word)
+                #TODO: Change the chars to space and split with it
                 #if (('?' or '(' or ')' or '[' or ']' or '{' or '}' or "\n" or "\t" or "\'" or '😉' or ':' or ';' or '!' or "'") in text):
                 word = word.replace('?','')
                 word = word.replace('!', '')
@@ -198,7 +199,7 @@ class Parse:
                             if (len(partOfToken) == 0):
                                 continue
                             if(not partOfToken.isdigit()):
-                                if(partOfToken[1].isupper()): #TODO: call for number too
+                                if(partOfToken[1].isupper()):
                                     finalWord+=partOfToken.upper()
                                     listOfTokens.append(partOfToken)
                                 #for case: "#Stay_At_Home" and "#stay_at_home"
@@ -345,9 +346,9 @@ class Parse:
                 """
                 # for case: Numbers
                 if (wordToken.replace('.', '', 1).isdigit()):
-                    if(("₀" or "₁" or "₂" or "₃" or "₄" or "₅" or "₆" or "₇" or "₈" or "₉") in wordToken): #Should replace subscript
+                    if(("₀" or "₁" or "₂" or "₃" or "₄" or "₅" or "₆" or "₇" or "₈" or "₉") in wordToken): #TODO:Should replace subscript
                         wordToken = str.maketrans("₀₁₂₃₄₅₆₇₈₉", "0123456789")
-                    if(("⁰" or "¹" or "²" or "³" or "⁴" or "⁵" or "⁶" or "⁷" or "⁸" or "⁹") in wordToken):#Should replace superscript
+                    if(("⁰" or "¹" or "²" or "³" or "⁴" or "⁵" or "⁶" or "⁷" or "⁸" or "⁹") in wordToken):#TODO:Should replace superscript
                         wordToken = str.maketrans("⁰¹²³⁴⁵⁶⁷⁸⁹", "0123456789")
                     wordTokenNumber = float(wordToken)
 
