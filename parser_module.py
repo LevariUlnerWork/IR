@@ -194,13 +194,20 @@ class Parse:
                         #For case: "#Stay_At_Home" and "#stay_at_home"
                         for partOfToken in wordToken.split('_'):
                             #For case: "Stay_At_USA"
-                            if(partOfToken[1].isupper()): #TODO: call for number too
-                                finalWord+=partOfToken
-                                listOfTokens.append(partOfToken)
-                            #for case: "#Stay_At_Home" and "#stay_at_home"
+                            if (len(partOfToken) == 0):
+                                continue
+                            if(not partOfToken.isdigit()):
+                                if(partOfToken[1].isupper()): #TODO: call for number too
+                                    finalWord+=partOfToken.upper()
+                                    listOfTokens.append(partOfToken)
+                                #for case: "#Stay_At_Home" and "#stay_at_home"
+                                else:
+                                    finalWord+=partOfToken.lower()
+                                    listOfTokens.append(partOfToken.lower())
+                            #for case: "#Covid_19" -> 19
                             else:
-                                finalWord+=partOfToken.lower()
-                                listOfTokens.append(partOfToken.lower())
+                                finalWord += partOfToken
+                                listOfTokens.append(partOfToken)
 
                         listOfTokens[listOfTokens.index("#"+wordToken)] = finalWord #Now we changed: "#stay_at_home" to "#stayathome"
 
