@@ -107,6 +107,7 @@ class Parse:
                 numIndex = listWithoutPunc.index(word)
                 #if (('?' or '(' or ')' or '[' or ']' or '{' or '}' or "\n" or "\t" or "\'" or '😉' or ':' or ';' or '!' or "'") in text):
                 word = word.replace('?','')
+                word = word.replace('!', '')
                 word = word.replace('&', '')
                 word = word.replace(';', '')
                 word = word.replace(':', '')
@@ -344,7 +345,10 @@ class Parse:
                 """
                 # for case: Numbers
                 if (wordToken.replace('.', '', 1).isdigit()):
-
+                    if(("₀" or "₁" or "₂" or "₃" or "₄" or "₅" or "₆" or "₇" or "₈" or "₉") in wordToken): #Should replace subscript
+                        wordToken = str.maketrans("₀₁₂₃₄₅₆₇₈₉", "0123456789")
+                    if(("⁰" or "¹" or "²" or "³" or "⁴" or "⁵" or "⁶" or "⁷" or "⁸" or "⁹") in wordToken):#Should replace superscript
+                        wordToken = str.maketrans("⁰¹²³⁴⁵⁶⁷⁸⁹", "0123456789")
                     wordTokenNumber = float(wordToken)
 
                     # if there are more than 3 digit before the point
