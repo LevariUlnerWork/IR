@@ -1,6 +1,6 @@
 class ConfigClass:
     def __init__(self):
-        self.corpusPath = 'C:/Users/User/PycharmProjects/IR/Data'
+        self.corpusPath = 'C:/Users/levco/PycharmProjects/Search_Engine/Data'
         #'C:/Users/levco/PycharmProjects/Search_Engine/Data'
         #C:/Users/User/PycharmProjects/IR/Data
         self.savedFileMainFolder = ''

@@ -157,7 +157,7 @@ class Parse:
                 listWithoutPunc.pop(numIndex)
                 word = shortcutDict[word]
                 for term in word.split(' '):
-                    listWithoutPunc.insert(term,i)
+                    listWithoutPunc.insert(i, term)
                     i+=1
                 numIndex = i
             #continue
@@ -173,7 +173,7 @@ class Parse:
             if word in shortscriptDict.keys():
                 i=numIndex
                 word = shortscriptDict[word]
-                listWithoutPunc.insert(word, numIndex)
+                listWithoutPunc.insert(numIndex, word)
 
 
             if("https" not in word):
@@ -269,15 +269,18 @@ class Parse:
 
         for wordToken in listOfTokens:
 
+            wordIndex= listOfTokens.index(wordToken)
+
             if(len(wordToken) > 0):
                 #tags
                 if(wordToken[0] == '@' and len(wordToken)!=1):
-                    listOfTokens.append("@")
-                    listOfTokens.append(wordToken[1:])
+                    listOfTokens.insert(wordIndex ,"@")
+                    wordIndex+=1
+                    listOfTokens.insert(wordIndex, wordToken[1:])
 
                 #dollar
                 if('$' in wordToken):
-                    listOfTokens.append("dollar")
+                    listOfTokens.insert(wordIndex+1, "dollar")
                     if(len(wordToken.replace('$','')) != 0 ): # for case: 2000$
                         listOfTokens[listOfTokens.index(wordToken)] = wordToken.replace('$','')
                         wordToken = wordToken.replace('$', '')
@@ -287,39 +290,39 @@ class Parse:
 
                 #Hashtags
                 if (wordToken[0] == '#' and not wordToken[1:].isdigit()):
-
+                    iIndex = wordIndex + 1
                     finalWord = "#"  # Final Word: "#stayathome"
                     if(wordToken.find("_") != -1):# if there is a '_'
                         wordToken = wordToken[1:] #now: "stay_at_home"
                         #For case: "#Stay_At_Home" and "#stay_at_home"
-                        for partOfToken in wordToken.split('_'):
-                            #For case: "Stay_At_USA"
+                        for partOfToken in wordToken.split('_'):#For case: word.split = ["Stay", "At", "USA"
+
                             if (len(partOfToken) == 0):
                                 continue
-                            if(not partOfToken.isdigit() and len(partOfToken) > 1):
+                            if(not partOfToken.isdigit() and len(partOfToken) > 1): #For case: Stay
                                 if(partOfToken[1].isupper()):
                                     finalWord+=partOfToken.upper()
-                                    listOfTokens.append(partOfToken)
+                                    listOfTokens.insert(iIndex, partOfToken)
+                                    iIndex+=1
                                 #for case: "#Stay_At_Home" and "#stay_at_home"
                                 else:
                                     finalWord+=partOfToken.lower()
-                                    listOfTokens.append(partOfToken.lower())
+                                    listOfTokens.insert(iIndex,partOfToken.lower())
+                                    iIndex += 1
                             #for case: "#Covid_19" -> 19
                             else:
                                 finalWord += partOfToken
-                                listOfTokens.append(partOfToken)
+                                listOfTokens.insert(iIndex, partOfToken)
+                                iIndex += 1
 
-                        listOfTokens[listOfTokens.index("#"+wordToken)] = finalWord #Now we changed: "#stay_at_home" to "#stayathome"
+                        listOfTokens[wordIndex] = finalWord #Now we changed: "#stay_at_home" to "#stayathome"
 
                     else:
                         #For case: "#StayAtHome"
-                        firstWord = wordToken
-                        wordToken = wordToken[1:] #Remove '#'
+                        wordToken = wordToken[1:] #wordToken = "StayAtHome"
                         listOfFinal = re.findall('[A-Z][^A-Z]*',finalWord) #listOfFinal = [Stay,At,U,S,A] || [Stay,At,Home]
                         correctWord = ""
                         for j in listOfFinal:
-                            if(len(listOfFinal) == 1):
-                                listOfFinal.append(j)
                             if(len(j) == 1):
                                 jFollower=listOfFinal.index(j)+1
                                 if(len(listOfFinal[jFollower]) == 1): #for case: USA
@@ -327,18 +330,15 @@ class Parse:
                                     while(len(listOfFinal[jFollower])==1):
                                         correctWord+=listOfFinal[jFollower]
                                         listOfFinal.remove(listOfFinal[jFollower])
-                                    listOfFinal.append(correctWord)
+                                    j = correctWord
                                 #After: [Stay,At,USA]
 
                             else: # for "Stay"
-                                listOfFinal[listOfFinal.index[j]] = j.lower() #from Stay -> stay
-
-                        listOfTokens+=listOfFinal
-
-
-                        for i in listOfFinal:
-                            partOfToken.append(i.lower())
-                        listOfTokens[listOfTokens.index(firstWord)] = finalWord
+                                j = j.lower() #from Stay -> stay
+                            finalWord+=j
+                            listOfTokens.insert(iIndex, j)
+                            iIndex+=1
+                    listOfTokens[wordIndex] = finalWord
 
                 #for case: 10.6 precent
                 if(wordToken == "precent" or wordToken == "precentage"):
