@@ -66,6 +66,36 @@ class Parse:
         retweet_quoted_indices = doc_as_list[13]
         term_dict = {}
 
+        #self.parse_sentence("3 3/4") #to check ourselves texts
+
+        #creating the real fields:
+        #start with urls:
+        old_ulrs = [url,retweet_url,quote_url,retweet_quoted_url]
+        new_urls=[]
+        for realUrlText in old_ulrs:
+            realUrlList=[]
+            if type(realUrlText) == str:
+                realUrlList = realUrlText.split(':') # realUrlList = {https, //t.co.. , https, //www.twitter.com...}
+            real_url_text=""
+            if(len(realUrlList) == 4):
+                real_url_text = realUrlList[2] + ":" + realUrlList[3]
+                real_url_text = real_url_text.replace('}' , '')
+                real_url_text = real_url_text.replace('"', '')
+            new_urls.append(real_url_text)
+        url,retweet_url,quote_url,retweet_quote_url = new_urls # url = https:... retweet_url = https...
+
+        #fix texts:
+        texts_list = [full_text, retweet_text, quote_text, retweet_quoted_text]
+        url_list = [url,retweet_url,quote_url,retweet_quote_url]
+        indices_list = [indices,retweet_url_indices,quote_url_indices,retweet_quoted_indices]
+        i=0
+        for ind in indices_list: # ind = null | = [] | = [[120,143]]
+            if(type(ind) == str and len(ind) > 2):
+                stopPoint = retweet_url_indices.split(',')[0].replace('[', '')
+                texts_list[i] = texts_list[i][:int(stopPoint)] + url_list[i]
+            i+=1
+        full_text, retweet_text, quote_text, retweet_quoted_text = texts_list
+
         tokenized_text = self.parse_sentence(full_text)
 
         doc_length = len(tokenized_text)  # after text operations.
@@ -171,7 +201,7 @@ class Parse:
                 numIndex = i
             #continue
 
-            shortscriptDict = {"0": "⁰", "1": "¹", "2": "²", "3": "³", "4": "⁴", "5": "⁵", "6": "⁶", "7": "⁷", "8": "⁸","9": "⁹",
+            shortscriptDict = {"⁰":"0","¹":"1",  "²":"2", "³":"3", "⁴":"4", "5": "⁵", "6": "⁶", "7": "⁷", "8": "⁸","9": "⁹",
                                "a": "ᵃ", "b": "ᵇ", "c": "ᶜ", "d": "ᵈ", "e": "ᵉ", "f": "ᶠ", "g": "ᵍ", "h": "ʰ", "i": "ᶦ","j": "ʲ",
                                "k": "ᵏ", "l": "ˡ", "m": "ᵐ", "n": "ⁿ", "o": "ᵒ", "p": "ᵖ", "q": "۹", "r": "ʳ", "s": "ˢ","t": "ᵗ",
                                "u": "ᵘ", "v": "ᵛ", "w": "ʷ", "x": "ˣ", "y": "ʸ", "z": "ᶻ", "A": "ᴬ", "B": "ᴮ", "C": "ᶜ","D": "ᴰ",
@@ -453,7 +483,7 @@ class Parse:
                     else: #3/4 -> 3th at April
                         dateNum = wordToken.split('/')
                         day = dateNum[0]
-                        month = calendar.month_name(dateNum[1]);
+                        month = calendar.month_abbr[int(dateNum[1])];
                         if(day == 1):
                             day+="st"
                         if(day == 2):
