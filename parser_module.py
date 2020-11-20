@@ -1,4 +1,4 @@
-
+import calendar
 import re
 from nltk.stem import PorterStemmer
 from document import Document
@@ -54,14 +54,23 @@ class Parse:
         tweet_date = doc_as_list[1]
         full_text = doc_as_list[2]
         url = doc_as_list[3]
-        retweet_text = doc_as_list[4]
-        retweet_url = doc_as_list[5]
-        quote_text = doc_as_list[6]
-        quote_url = doc_as_list[7]
+        indices = doc_as_list[4]
+        retweet_text = doc_as_list[5]
+        retweet_url = doc_as_list[6]
+        retweet_url_indices = doc_as_list[7]
+        quote_text = doc_as_list[8]
+        quote_url = doc_as_list[9]
+        quote_url_indices = doc_as_list[10]
+        retweet_quoted_text = doc_as_list[11]
+        retweet_quoted_url = doc_as_list[12]
+        retweet_quoted_indices = doc_as_list[13]
         term_dict = {}
+
         tokenized_text = self.parse_sentence(full_text)
 
         doc_length = len(tokenized_text)  # after text operations.
+
+        #Do Captial letters here
 
         for term in tokenized_text:
             if term not in term_dict.keys():
@@ -188,6 +197,11 @@ class Parse:
                         if (isNumber and i == ','):
                             if (',' in word):
                                 listWithoutPunc[numIndex] = word.replace(',', '')
+                            if ('-' in word): #321-312
+                                wordList = word.split('-')
+                                listWithoutPunc[numIndex] = wordList[0]
+                                for i in range (1,len(wordList)):
+                                    listWithoutPunc.insert(numIndex+i, wordList[i])
                             else: # 123.33 | 213/2312
                                 continue
                         # for case: go. | go,
@@ -299,17 +313,18 @@ class Parse:
 
                             if (len(partOfToken) == 0):
                                 continue
-                            if(not partOfToken.isdigit() and len(partOfToken) > 1): #For case: Stay
-                                if(partOfToken[1].isupper()):
-                                    finalWord+=partOfToken.upper()
-                                    listOfTokens.insert(iIndex, partOfToken)
-                                    iIndex+=1
+                            #if(not partOfToken.isdigit() and len(partOfToken) > 1): #For case: Stay
+                            if (not partOfToken.isdigit()):  # For case: Stay
+                                #if(partOfToken[1].isupper()):#IF STay -> STAY
+                                 #   finalWord+=partOfToken.upper()
+                                 #  listOfTokens.insert(iIndex, partOfToken)
+                                 #   iIndex+=1
                                 #for case: "#Stay_At_Home" and "#stay_at_home"
-                                else:
-                                    finalWord+=partOfToken.lower()
-                                    listOfTokens.insert(iIndex,partOfToken.lower())
-                                    iIndex += 1
-                            #for case: "#Covid_19" -> 19
+                                #else: # if: Stay -> stay
+                                 finalWord+=partOfToken.lower()
+                                 listOfTokens.insert(iIndex,partOfToken.lower())
+                                 iIndex += 1
+                            #for case: "#~Covid_~19" -> 19
                             else:
                                 finalWord += partOfToken
                                 listOfTokens.insert(iIndex, partOfToken)
@@ -430,6 +445,32 @@ class Parse:
 
                     listOfTokens[listOfTokens.index(wordToken)] = "%.3f" % round(wordTokenNumber, 3) + varInt
 
+                #for case: 6 3/4 and date
+                if("/" in wordToken):
+                    if(listOfTokens[wordIndex-1].isdigit()):
+                        listOfTokens[wordIndex-1] += " " + wordToken
+                        listOfTokens.pop(wordIndex)
+                    else: #3/4 -> 3th at April
+                        dateNum = wordToken.split('/')
+                        day = dateNum[0]
+                        month = calendar.month_name(dateNum[1]);
+                        if(day == 1):
+                            day+="st"
+                        if(day == 2):
+                            day+= "nd"
+                        if(day == 3):
+                            day += "rd"
+                        else:
+                            day += "th"
+                        listOfTokens[wordIndex] = day
+                        wordIndex+=1
+                        listOfTokens.insert(wordIndex, month)
+                        wordToken = month
+                        if(len(dateNum) == 3):
+                            year = dateNum[2]
+                            wordIndex += 1
+                            listOfTokens.insert(wordIndex,year)
+                            wordToken = year
         #Change the words to Lower case or Upper Case
         for wordBeChange in listOfTokens:
 
