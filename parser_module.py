@@ -1,5 +1,6 @@
 import calendar
 import re
+import spacy
 from nltk.stem import PorterStemmer
 from document import Document
 
@@ -14,18 +15,8 @@ class Parse:
         full_path.close()
         self.stop_words = listOfStopWords.split(" ")
         #print(type(self.stop_words))
-        '''
-        #shortcutdictionary
-        self.shortcutDict = {}
-        with open('shortcut.txt') as f:
-            for line in f:
-                line = line.rstrip('\n')
-                (key, val) = line.split(':')
-                self.shortcutDict[key] = val
-        '''
 
 
-    shortcutDict = {}
     def parse_sentence(self, text):
         """
         This function tokenize, remove stop words and apply lower case for every word within the text
@@ -113,13 +104,11 @@ class Parse:
         return document
 
     #stemming - save the suffix
-    def stemming(text):
+    def stemming(list):
         suffixWord = PorterStemmer()
-        listOfSuffix = text.split(' ')
-        for word in text:
-            listOfSuffix.append(suffixWord.stem(word))
-            listOfSuffix.remove(word)
-
+        for word in list:
+            wordInx = list.index(word)
+            list.insert(wordInx, suffixWord.stem(word))
 
     #Punctuation
     def punctuation(text):
@@ -199,15 +188,16 @@ class Parse:
                     listWithoutPunc.insert(i, term)
                     i+=1
                 numIndex = i
-            #continue
 
-            shortscriptDict = {"⁰":"0","¹":"1",  "²":"2", "³":"3", "⁴":"4", "5": "⁵", "6": "⁶", "7": "⁷", "8": "⁸","9": "⁹",
-                               "a": "ᵃ", "b": "ᵇ", "c": "ᶜ", "d": "ᵈ", "e": "ᵉ", "f": "ᶠ", "g": "ᵍ", "h": "ʰ", "i": "ᶦ","j": "ʲ",
-                               "k": "ᵏ", "l": "ˡ", "m": "ᵐ", "n": "ⁿ", "o": "ᵒ", "p": "ᵖ", "q": "۹", "r": "ʳ", "s": "ˢ","t": "ᵗ",
-                               "u": "ᵘ", "v": "ᵛ", "w": "ʷ", "x": "ˣ", "y": "ʸ", "z": "ᶻ", "A": "ᴬ", "B": "ᴮ", "C": "ᶜ","D": "ᴰ",
-                               "E": "ᴱ", "F": "ᶠ", "G": "ᴳ", "H": "ᴴ", "I": "ᴵ", "J": "ᴶ", "K": "ᴷ", "L": "ᴸ", "M": "ᴹ","N": "ᴺ",
-                               "O": "ᴼ", "P": "ᴾ", "Q": "Q", "R": "ᴿ", "S": "ˢ", "T": "ᵀ", "U": "ᵁ", "V": "ⱽ", "W": "ᵂ","X": "ˣ",
-                               "Y": "ʸ", "Z": "ᶻ", "+": "⁺", "-": "⁻", "=": "⁼", "(": "⁽", ")": "⁾"}
+
+            shortscriptDict = {"⁰":"0","¹":"1","²":"2","³":"3","⁴":"4","⁵":"5" ,"⁶":"6","⁷":"7","⁸":"8","⁹":"9",
+                               "ᵃ":"a","ᵇ":"b","ᶜ":"c","ᵈ":"d","ᵉ":"e","ᶠ":"f","ᵍ":"g","ʰ":"h","ᶦ":"i","ʲ":"j",
+                               "ᵏ":"k","ˡ":"l","ᵐ":"m","ⁿ":"n","ᵒ":"o","ᵖ":"p","۹":"q","ʳ":"r","ˢ":"s","ᵗ":"t",
+                               "ᵘ":"u","ᵛ":"v","ʷ":"w","ˣ":"x","ʸ":"y","ᶻ":"z","ᴬ":"A","ᴮ":"B","ᶜ":"C","ᴰ":"D",
+                               "ᴱ":"E","ᶠ":"F","ᴳ":"G","ᴴ":"H","ᴵ":"I","ᴶ":"J","ᴷ":"K","ᴸ":"L","ᴹ":"M","ᴺ":"N",
+                               "ᴼ":"O","ᴾ":"P","Q":"Q","ᴿ":"R","ˢ":"S","ᵀ":"T","ᵁ":"U","ⱽ":"V","ᵂ":"W","ˣ":"X",
+                               "ʸ":"Y","ᶻ":"Z","⁺":"+","⁻":"-","⁼":"=","⁽":"(","⁾":")"}
+
 
             if word in shortscriptDict.keys():
                 i=numIndex
@@ -286,30 +276,6 @@ class Parse:
     def tokenize_words(text):
         listOfTokens = Parse.punctuation(text)
 
-        #-----------------------------------------CHECK-------------------------------------------------
-        shortscriptDict = {"0": "⁰", "1": "¹", "2": "²", "3": "³", "4": "⁴", "5": "⁵", "6": "⁶","7": "⁷", "8": "⁸", "9": "⁹",
-                           "a": "ᵃ", "b": "ᵇ", "c": "ᶜ", "d": "ᵈ","e": "ᵉ", "f": "ᶠ", "g": "ᵍ", "h": "ʰ", "i": "ᶦ", "j": "ʲ",
-                           "k": "ᵏ","l": "ˡ", "m": "ᵐ", "n": "ⁿ", "o": "ᵒ", "p": "ᵖ", "q": "۹", "r": "ʳ","s": "ˢ", "t": "ᵗ",
-                           "u": "ᵘ", "v": "ᵛ", "w": "ʷ", "x": "ˣ", "y": "ʸ","z": "ᶻ", "A": "ᴬ", "B": "ᴮ", "C": "ᶜ", "D": "ᴰ",
-                           "E": "ᴱ", "F": "ᶠ","G": "ᴳ", "H": "ᴴ", "I": "ᴵ", "J": "ᴶ", "K": "ᴷ", "L": "ᴸ", "M": "ᴹ","N": "ᴺ",
-                           "O": "ᴼ", "P": "ᴾ", "Q": "Q", "R": "ᴿ", "S": "ˢ", "T": "ᵀ","U": "ᵁ", "V": "ⱽ", "W": "ᵂ", "X": "ˣ",
-                           "Y": "ʸ", "Z": "ᶻ", "+": "⁺","-": "⁻", "=": "⁼", "(": "⁽", ")": "⁾"}
-
-
-
-        #with open('subscript.txt') as file:
-            #for line in file:
-                #(key, val) = line.split(':')
-              #  shortscriptDict[key] = val
-     #   print(shortscriptDict)
-
-        #textExam2 = "9 ₀₁₂₃₄₅₆₇₈₉"
-        #for sub in textExam2.split():
-            #if sub in shortscriptDict.keys():
-                #textExam2 = textExam2.replace(sub, shortscriptDict[sub])
-        #print(textExam2)
-        #----------------------------------------until here-----------------------------------------------
-
 
         for wordToken in listOfTokens:
 
@@ -317,14 +283,14 @@ class Parse:
 
             if(len(wordToken) > 0):
                 #tags
-                if(wordToken[0] == '@' and len(wordToken)!=1):
+                if(wordToken[0] == '@' and len(wordToken) != 1):
                     listOfTokens.insert(wordIndex ,"@")
-                    wordIndex+=1
-                    listOfTokens.insert(wordIndex, wordToken[1:])
+                    wordIndex += 1
+                    listOfTokens.insert(wordIndex, wordToken[1:]) #should be wordIndex+1 ???????????????????????????????????
 
                 #dollar
                 if('$' in wordToken):
-                    listOfTokens.insert(wordIndex+1, "dollar")
+                    listOfTokens.insert(wordIndex+1, "dollar") #why +1 ?????????????????????????????????????????????????????
                     if(len(wordToken.replace('$','')) != 0 ): # for case: 2000$
                         listOfTokens[listOfTokens.index(wordToken)] = wordToken.replace('$','')
                         wordToken = wordToken.replace('$', '')
@@ -501,6 +467,21 @@ class Parse:
                             wordIndex += 1
                             listOfTokens.insert(wordIndex,year)
                             wordToken = year
+
+        #ENTITY RECOGNIZE - because its without '.' if before and after the point there is a entity name it will saved as one
+        nlp = spacy.load("en_core_web_sm")
+        entityDict = {}
+        entityRecognize = nlp(text)
+        for entity in entityRecognize.ents:
+            eIndex = listOfTokens.index(entity)
+            entityList = entity.split(' ')
+            listOfTokens.insert(eIndex, entity)
+            entityDict[entity] = eIndex
+            if(len(entityList) > 1):
+                for i in range(1,len(entityList)):
+                    listOfTokens.remove(eIndex+i)
+
+
         #Change the words to Lower case or Upper Case
         for wordBeChange in listOfTokens:
 
@@ -514,6 +495,8 @@ class Parse:
                 #for case: Max -> MAX
                 else:
                     listOfTokens[listOfTokens.index(wordBeChange)] = wordBeChange.upper()
+
+        text.stemming(listOfTokens)
 
         return listOfTokens
 
