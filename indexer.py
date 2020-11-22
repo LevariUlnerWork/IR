@@ -55,7 +55,7 @@ class Indexer:
                 print('problem with the following key {}'.format(term[0]))
 
 
-        #update: maxTerm dict
+        #update: maxTerm dictiontary
         maxFreq = max(freq_terms.values())
         maxTerms = []
         for i in freq_terms.keys():
