@@ -22,8 +22,21 @@ class Indexer:
                     self.postingDict[term] = []
                 else:
                     self.inverted_idx[term] += 1
+                    for item in self.postingDict[term]:
+                        if item[0] == document.tweet_id:
+                            self.postingDict[term][2].append(document_dictionary.keys().index(term))
 
-                self.postingDict[term].append((document.tweet_id, document_dictionary[term]))
+                self.postingDict[term].append((document.tweet_id,document_dictionary[term],[document_dictionary.keys().index(term)]))
 
             except:
                 print('problem with the following key {}'.format(term[0]))
+
+        #create sorted dictionary - key: term, value: doc_id
+        inverteDict = {}
+        listOfSortedTerms = sorted(self.inverted_idx.keys())
+        for term in listOfSortedTerms:
+            listOfDocID = sorted(self.postingDict[term][0])
+            for docID in listOfDocID:
+                inverteDict[term] = docID
+
+
