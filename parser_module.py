@@ -99,12 +99,14 @@ class Parse:
         doc_length = len(tokenized_text)  # after text operations.
 
         #Do Captial letters here
-
-        for term in tokenized_text:
+        index= 0
+        for term in tokenized_text: #termDict:{key=term:[[indexes],freq]
             if term not in term_dict.keys():
-                term_dict[term] = 1
+                term_dict[term] = [[index],1]
             else:
-                term_dict[term] += 1
+                term_dict[term][1] += 1
+                term_dict[term][0].append(index)
+            index+=1
 
         document = Document(tweet_id, tweet_date, full_text, url, retweet_text, retweet_url, quote_text,
                             quote_url, term_dict, doc_length)
