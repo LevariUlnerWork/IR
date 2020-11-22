@@ -82,12 +82,19 @@ class Parse:
         i=0
         for ind in indices_list: # ind = null | = [] | = [[120,143]]
             if(type(ind) == str and len(ind) > 2):
-                stopPoint = retweet_url_indices.split(',')[0].replace('[', '')
+                stopPoint = ind.split(',')[0].replace('[', '')
                 texts_list[i] = texts_list[i][:int(stopPoint)] + url_list[i]
             i+=1
         full_text, retweet_text, quote_text, retweet_quoted_text = texts_list
 
         tokenized_text = self.parse_sentence(full_text)
+
+        if(type(retweet_text) == str and len(retweet_text)!= ''):
+            tokenized_text += self.parse_sentence(retweet_text)
+        if (type(quote_text) == str and len(quote_text)!= ''):
+            tokenized_text += self.parse_sentence(quote_text)
+        if (type(retweet_quoted_text) == str and len(retweet_quoted_text) != ''):
+            tokenized_text += self.parse_sentence(retweet_quoted_text)
 
         doc_length = len(tokenized_text)  # after text operations.
 
@@ -108,7 +115,8 @@ class Parse:
         suffixWord = PorterStemmer()
         for word in list:
             wordInx = list.index(word)
-            list.insert(wordInx, suffixWord.stem(word))
+            list[wordInx] =  suffixWord.stem(word)
+        return list
 
     #Punctuation
     def punctuation(text):
@@ -127,20 +135,10 @@ class Parse:
         text = text.replace('}', ' ')
         text = text.replace('\n', ' ')
         text = text.replace('\t', ' ')
-        #text = text.replace("\'", ' ')
+        text = text.replace("//", ' ')
         text = text.encode("ascii", "ignore").decode()  # delete all illegal characters like emojis
 
         listWithoutPunc = text.split(' ')
-
-        #Handle urls:
-        domain=[]#domain=""
-        # for case:www.abc.com -> URL
-        if 'https://' in text:
-            for word in listWithoutPunc:
-                if ('https://' in word):
-                    domain = word.split('//')  # domain = [{"https:", "t.co/sdfs..."]
-                    domain = domain[1].split('/')  # domai = ["t.co", "sdfs"...]
-                    domain = domain[0]  # domain = "t.co"
 
 
         #this list is not final
@@ -185,8 +183,9 @@ class Parse:
                 listWithoutPunc.pop(numIndex)
                 word = shortcutDict[word]
                 for term in word.split(' '):
-                    listWithoutPunc.insert(i, term)
-                    i+=1
+                    if('/' != term):
+                        listWithoutPunc.insert(i, term)
+                        i+=1
                 numIndex = i
 
 
@@ -205,65 +204,65 @@ class Parse:
                 listWithoutPunc.insert(numIndex, word)
 
 
-            if("https" not in word):
-                if(('.' or ',' or '/' or '-') in word and len(word) > 1):
-                    for i in [',','.','/','-']:
-                        seperateWordList = word.split(i)
-                        isNumber = True
-                        for inWord in seperateWordList:
-                            if not inWord.isdigit():
-                                isNumber = False
-                        # for case: 13,333
-                        if (isNumber and i == ','):
-                            if (',' in word):
-                                listWithoutPunc[numIndex] = word.replace(',', '')
-                            if ('-' in word): #321-312
-                                wordList = word.split('-')
-                                listWithoutPunc[numIndex] = wordList[0]
-                                for i in range (1,len(wordList)):
-                                    listWithoutPunc.insert(numIndex+i, wordList[i])
-                            else: # 123.33 | 213/2312
-                                continue
+
+            if(('.' or ',' or '/' or '-') in word and len(word) > 1):
+                for i in [',','.','/','-']:
+                    seperateWordList = word.split(i)
+                    isNumber = True
+                    for inWord in seperateWordList:
+                        if not inWord.isdigit():
+                            isNumber = False
+                    # for case: 13,333
+                    if (isNumber and i == ','):
+                        if (',' in word):
+                            listWithoutPunc[numIndex] = word.replace(',', '')
+                        if ('-' in word): #321-312
+                            wordList = word.split('-')
+                            listWithoutPunc[numIndex] = wordList[0]
+                            for i in range (1,len(wordList)):
+                                listWithoutPunc.insert(numIndex+i, wordList[i])
+                        else: # 123.33 | 213/2312
+                            continue
+
+                    elif (len(seperateWordList) >= 2):
                         # for case: go. | go,
-                        elif (len(seperateWordList) >= 2):
-                            if(len(seperateWordList[1]) == 0):
-                                if (',' in word and i == ','):
-                                    word = word.replace(',', '')
-                                if ('.' in word and i == '.'):
-                                    word = word.replace('.', '')
-                                if ('/' in word and i == '/'):
-                                    word = word.replace('/', '')
-                                if ('-' in word and i == '-'):
-                                    word = word.replace('-', '')
-                                listWithoutPunc[numIndex] = word
-                            else:
-                                # for case: "His/Her | his,her"
-                                listWithoutPunc.pop(numIndex)
-                                listWithoutPunc += seperateWordList
-                        else:
+                        if(len(seperateWordList[1]) == 0):
                             if (',' in word and i == ','):
                                 word = word.replace(',', '')
-                                listWithoutPunc[numIndex] = word
                             if ('.' in word and i == '.'):
                                 word = word.replace('.', '')
-                                listWithoutPunc[numIndex] = word
                             if ('/' in word and i == '/'):
                                 word = word.replace('/', '')
-                                listWithoutPunc[numIndex] = word
                             if ('-' in word and i == '-'):
                                 word = word.replace('-', '')
-                                listWithoutPunc[numIndex] = word
-                            else:
+                            listWithoutPunc[numIndex] = word
+                        else:
+                            if (i=='.' and '/' in word and '.' in word):
                                 continue
+                            # for case: "His/Her | his,her"
+                            listWithoutPunc.pop(numIndex)
+                            place = numIndex
+                            for w in seperateWordList:
+                                listWithoutPunc.insert(place,w)
+                                place+=1
+                    else:
+                        if (',' in word and i == ','):
+                            word = word.replace(',', '')
+                            listWithoutPunc[numIndex] = word
+                        if ('.' in word and i == '.'):
+                            word = word.replace('.', '')
+                            listWithoutPunc[numIndex] = word
+                        if ('/' in word and i == '/'):
+                            word = word.replace('/', '')
+                            listWithoutPunc[numIndex] = word
+                        if ('-' in word and i == '-'):
+                            word = word.replace('-', '')
+                            listWithoutPunc[numIndex] = word
+                        else:
+                            continue
                 if(word == ''): # Delete non words
                     listWithoutPunc.remove('')
-            else: # Delete urls
-                listWithoutPunc.remove(word)
-
-        if(len(domain)>0):
-            return listWithoutPunc+[domain]
-        else:
-            return listWithoutPunc
+        return listWithoutPunc
 
     def isfloat(value):
         try:
@@ -286,7 +285,8 @@ class Parse:
                 if(wordToken[0] == '@' and len(wordToken) != 1):
                     listOfTokens.insert(wordIndex ,"@")
                     wordIndex += 1
-                    listOfTokens.insert(wordIndex, wordToken[1:]) #should be wordIndex+1 ???????????????????????????????????
+                    listOfTokens[wordIndex] = wordToken[1:] #should be wordIndex+1 ???????????????????????????????????
+                    continue
 
                 #dollar
                 if('$' in wordToken):
@@ -467,7 +467,11 @@ class Parse:
                             wordIndex += 1
                             listOfTokens.insert(wordIndex,year)
                             wordToken = year
+            else:
+                listOfTokens.pop(wordIndex)
+                continue
 
+        """
         #ENTITY RECOGNIZE - because its without '.' if before and after the point there is a entity name it will saved as one
         nlp = spacy.load("en_core_web_sm")
         entityDict = {}
@@ -481,7 +485,7 @@ class Parse:
                 for i in range(1,len(entityList)):
                     listOfTokens.remove(eIndex+i)
 
-
+        """
         #Change the words to Lower case or Upper Case
         for wordBeChange in listOfTokens:
 
@@ -496,7 +500,7 @@ class Parse:
                 else:
                     listOfTokens[listOfTokens.index(wordBeChange)] = wordBeChange.upper()
 
-        text.stemming(listOfTokens)
+        listOfTokens = Parse.stemming(listOfTokens)
 
         return listOfTokens
 
