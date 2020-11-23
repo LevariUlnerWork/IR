@@ -257,6 +257,7 @@ class Parse:
                                     place += 1
                                 listWithoutPunc.insert(place,w)
                                 place+=1
+                            word = listWithoutPunc[numIndex]
                     else:
                         if (',' in word and i == ','):
                             word = word.replace(',', '')
