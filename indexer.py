@@ -20,7 +20,7 @@ class Indexer:
         localDocPostingFile = {}
         listOfUniques = [] #list of unique terms
         self.term_max_freq[docID] = [] #[[] , , []]
-        # Go over each term in the doc
+        # Go over each term in the doc d
         for term in document_dictionary.keys():
             try:
                 #Update the freq of the term in this doc:
