@@ -1,4 +1,5 @@
 from reader import ReadFile
+import stemmer
 from configuration import ConfigClass
 from parser_module import Parse
 from indexer import Indexer
@@ -7,16 +8,18 @@ import utils
 import os
 
 
-def run_engine():
+def run_engine(corpus_path = "",output_path = "",stemming=True):
     """
 
     :return:
     """
     number_of_documents = 0
-
+    stemmerLocal = None
     config = ConfigClass()
+    if(stemming):
+        stemmerLocal = stemmer()
     r = ReadFile(corpus_path=config.get__corpusPath())
-    p = Parse()
+    p = Parse(stemmerLocal)
     indexer = Indexer(config)
 
     #read all files from all folders:
@@ -41,7 +44,8 @@ def run_engine():
             parsed_document = p.parse_doc(document)
             number_of_documents += 1
             # index the document data
-            indexer.add_new_doc(parsed_document)
+            if(len(parsed_document.term_doc_dictionary) != 0):
+                indexer.add_new_doc(parsed_document)
             d = 1
         i += 1
     print('Finished parsing and indexing. Starting to export files')
@@ -65,8 +69,8 @@ def search_and_rank_query(query, inverted_index, k):
     return searcher.ranker.retrieve_top_k(ranked_docs, k)
 
 
-def main():
-    run_engine()
+def main(corpus_path = "",output_path = "",stemming=False,queries = [],num_docs_to_rerieve = 0):
+    run_engine(corpus_path = "",output_path = "",stemming=False)
     query = input("Please enter a query: ")
     k = int(input("Please enter number of docs to retrieve: "))
     inverted_index = load_index()

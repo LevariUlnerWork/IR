@@ -3,14 +3,16 @@ import re
 import spacy
 from nltk.stem import PorterStemmer
 from document import Document
+import stemmer
 
 
 class Parse:
 
-    def __init__(self):
+    def __init__(self, stemming=None):
         #self.stop_words = stopwords.words('english') - we are not use this stop words
         full_path = open('stop-words.txt',"r")
         listOfStopWords = full_path.read()
+        self.stemmering = stemming
         #print(listOfStopWords)
         full_path.close()
         self.stop_words = listOfStopWords.split(" ")
@@ -31,7 +33,8 @@ class Parse:
         #    text_tokens_without_stopwords = [w.lower() for w in text_tokens]
         #else:
         text_tokens_without_stopwords = [w.lower() for w in text_tokens if w not in self.stop_words]
-
+        if(self.stemmering != None):
+            text_tokens_without_stopwords = stemmer.stem_list(text_tokens_without_stopwords)
         return text_tokens_without_stopwords
 
     #this function is used for the tweets
@@ -114,14 +117,6 @@ class Parse:
         document = Document(tweet_id, tweet_date, full_text, url, retweet_text, retweet_url, quote_text,
                             quote_url, term_dict, doc_length)
         return document
-
-    #stemming - save the suffix
-    def stemming(list):
-        suffixWord = PorterStemmer()
-        for word in list:
-            wordInx = list.index(word)
-            list[wordInx] =  suffixWord.stem(word)
-        return list
 
     #Punctuation
     def punctuation(text):
@@ -525,8 +520,6 @@ class Parse:
                 #for case: Max -> MAX
                 else:
                     listOfTokens[listOfTokens.index(wordBeChange)] = wordBeChange.upper()
-
-        listOfTokens = Parse.stemming(listOfTokens)
 
         return listOfTokens
 
