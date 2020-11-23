@@ -42,6 +42,7 @@ def run_engine():
             number_of_documents += 1
             # index the document data
             indexer.add_new_doc(parsed_document)
+            d = 1
         i += 1
     print('Finished parsing and indexing. Starting to export files')
 
