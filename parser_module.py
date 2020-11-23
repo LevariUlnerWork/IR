@@ -203,11 +203,15 @@ class Parse:
                                "ʸ":"Y","ᶻ":"Z","⁺":"+","⁻":"-","⁼":"=","⁽":"(","⁾":")"}
 
 
-            if word in shortscriptDict.keys():
-                i=numIndex
-                word = shortscriptDict[word]
-                listWithoutPunc.insert(numIndex, word)
-
+            listOfPow = list(word)
+            realWord = ""
+            for pow in listOfPow:
+                if pow in shortscriptDict.keys():
+                   realWord += shortscriptDict[word]
+                else:
+                    realWord += pow
+            
+            listWithoutPunc.insert(numIndex, realWord)
 
 
             if(('.' in word or ',' in word or '/' in word or '-' in word)):
