@@ -141,6 +141,7 @@ class Parse:
         text = text.replace('\n', ' ')
         text = text.replace('\t', ' ')
         text = text.replace("//", ' ')
+        text = text.replace('\'', "'")
         text = text.encode("ascii", "ignore").decode()  # delete all illegal characters like emojis
 
         listWithoutPunc = text.split(' ')
@@ -452,18 +453,25 @@ class Parse:
 
                 #for case: 6 3/4 and date
                 if("/" in wordToken):
+                    #for case: 6 3/4
                     if(listOfTokens[wordIndex-1].isdigit()):
                         listOfTokens[wordIndex-1] += " " + wordToken
                         listOfTokens.pop(wordIndex)
                     else: #3/4 -> 3th at April
                         dateNum = wordToken.split('/')
-                        day = dateNum[0]
-                        month = calendar.month_abbr[int(dateNum[1])];
-                        if(day == 1):
+                        if(len(dateNum)>3 or int(dateNum[0]) > 31 or int(dateNum[1]) > 31 or (int(dateNum[0]) > 12 and int(dateNum[1]) > 12)):
+                            continue
+                        if(int(dateNum[1]) > 12):
+                            day = dateNum[1]
+                            month = calendar.month_abbr[int(dateNum[0])];
+                        else:
+                            day = dateNum[0]
+                            month = calendar.month_abbr[int(dateNum[1])];
+                        if(day == "1"):
                             day+="st"
-                        if(day == 2):
+                        if(day == "2"):
                             day+= "nd"
-                        if(day == 3):
+                        if(day == "3"):
                             day += "rd"
                         else:
                             day += "th"

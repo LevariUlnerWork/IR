@@ -19,9 +19,9 @@ def run_engine():
     p = Parse()
     indexer = Indexer(config)
     listOfDoc = os.listdir(config.get__corpusPath())
-    i = 1
+    i = 2
     #Read all files:
-    while i < 2: #Real is : while i < len(os.listdir(config.get__corpusPath())):
+    while i < 3: #Real is : while i < len(os.listdir(config.get__corpusPath())):
         documents_list = r.read_file(file_name=listOfDoc[i])
         # Iterate over every document in the file
         for idx, document in enumerate(documents_list):
