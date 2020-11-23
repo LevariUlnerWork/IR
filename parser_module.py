@@ -83,7 +83,10 @@ class Parse:
         for ind in indices_list: # ind = null | = [] | = [[120,143]]
             if(type(ind) == str and len(ind) > 2):
                 stopPoint = ind.split(',')[0].replace('[', '')
-                texts_list[i] = texts_list[i][:int(stopPoint)] + url_list[i]
+                if("http" in texts_list[i][int(stopPoint):]):
+                    texts_list[i] = texts_list[i][:int(stopPoint)] + url_list[i]
+                else:
+                    texts_list[i]+=url_list[i]
             i+=1
         full_text, retweet_text, quote_text, retweet_quoted_text = texts_list
 
