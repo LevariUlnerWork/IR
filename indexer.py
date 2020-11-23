@@ -14,6 +14,8 @@ class Indexer:
         :param document: a document need to be indexed.
         :return: -
         """
+        #TODO: delete t.co from the corpus.
+        #TODO: delete 1 time show terms
         docID = document.tweet_id
         document_dictionary = document.term_doc_dictionary # document_dictionary = {term:[[indexes],freq]
         freq_terms = {} # save the freq of the term in this doc

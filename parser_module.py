@@ -60,8 +60,10 @@ class Parse:
         retweet_quoted_indices = doc_as_list[13]
         term_dict = {}
 
-        #isit = self.parse_sentence("132⁰ˣ") #to check ourselves texts
-
+        isit = self.parse_sentence("'จากliveจีบเด็กของป๋าในวันนั้น สู่ #ต้นหนชลธี ในวันนี้ -///- #ป๊อดหิวข้าว 🎉🎉🎉🎉  https://t.co/ElCpYcGA3R'") #to check ourselves texts
+        #TODO: delete terms: '/-', "\'","\"
+        #TODO: Check if to undo fulltext if it starts with "RT"
+        #TODO: do try-catch to make this parser to allways
         #creating the real fields:
         #start with urls:
         old_ulrs = [url,retweet_url,quote_url,retweet_quoted_url]
@@ -136,7 +138,7 @@ class Parse:
         text = text.replace('\n', ' ')
         text = text.replace('\t', ' ')
         text = text.replace("//", ' ')
-        text = text.replace('\'', "'")
+        text = text.replace("\'", "'")
         listWithoutPunc = text.split(' ')
 
 
@@ -211,8 +213,9 @@ class Parse:
                     realWord += pow
             listWithoutPunc.pop(numIndex)
             listWithoutPunc.insert(numIndex, realWord)
-
+            word=realWord
             word = word.encode("ascii", "ignore").decode()  # delete all illegal characters like emojis
+            listWithoutPunc[numIndex] = word
             if(('.' in word or ',' in word or '/' in word or '-' in word)):
                 if (word == ',' or word == '.' or word == '/' or word == '-'):
                     listWithoutPunc.pop(numIndex)
