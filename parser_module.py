@@ -57,7 +57,7 @@ class Parse:
         retweet_quoted_indices = doc_as_list[13]
         term_dict = {}
 
-        #isit = self.parse_sentence("occustion/stemmer") #to check ourselves texts
+        #isit = self.parse_sentence("132⁰ˣ") #to check ourselves texts
 
         #creating the real fields:
         #start with urls:
@@ -142,8 +142,6 @@ class Parse:
         text = text.replace('\t', ' ')
         text = text.replace("//", ' ')
         text = text.replace('\'', "'")
-        text = text.encode("ascii", "ignore").decode()  # delete all illegal characters like emojis
-
         listWithoutPunc = text.split(' ')
 
 
@@ -186,11 +184,17 @@ class Parse:
 
             if word in shortcutDict.keys():
                 listWithoutPunc.pop(numIndex)
+                i = numIndex
                 word = shortcutDict[word]
+                toJump = False
                 for term in word.split(' '):
                     if('/' != term):
-                        listWithoutPunc.insert(numIndex, term)
-                        numIndex+=1
+                        listWithoutPunc.insert(i, term)
+                        word = term
+                        i+=1
+                        toJump = True
+                if(toJump):
+                    continue
 
 
 
@@ -207,13 +211,13 @@ class Parse:
             realWord = ""
             for pow in listOfPow:
                 if pow in shortscriptDict.keys():
-                   realWord += shortscriptDict[word]
+                   realWord += shortscriptDict[pow]
                 else:
                     realWord += pow
-            
+            listWithoutPunc.pop(numIndex)
             listWithoutPunc.insert(numIndex, realWord)
 
-
+            word = word.encode("ascii", "ignore").decode()  # delete all illegal characters like emojis
             if(('.' in word or ',' in word or '/' in word or '-' in word)):
                 if (word == ',' or word == '.' or word == '/' or word == '-'):
                     listWithoutPunc.pop(numIndex)

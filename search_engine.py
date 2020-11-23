@@ -18,8 +18,20 @@ def run_engine():
     r = ReadFile(corpus_path=config.get__corpusPath())
     p = Parse()
     indexer = Indexer(config)
-    listOfDoc = os.listdir(config.get__corpusPath())
-    i = 2
+
+    #read all files from all folders:
+    listOfFold = os.listdir(config.get__corpusPath()) #list of folders
+    listOfDoc = [] #list of files and their paths
+    for folder in listOfFold:
+        if(".DS" in folder):
+            continue
+        listOfDocsBefore = os.listdir(config.get__corpusPath() + folder)
+        for file in listOfDocsBefore:
+            if (".DS" in file):
+                continue
+            listOfDoc += [folder + "/" + file]
+
+    i = 2 #first file
     #Read all files:
     while i < 3: #Real is : while i < len(os.listdir(config.get__corpusPath())):
         documents_list = r.read_file(file_name=listOfDoc[i])
