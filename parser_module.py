@@ -57,7 +57,7 @@ class Parse:
         retweet_quoted_indices = doc_as_list[13]
         term_dict = {}
 
-        #self.parse_sentence("3 3/4") #to check ourselves texts
+        #isit = self.parse_sentence("occustion/stemmer") #to check ourselves texts
 
         #creating the real fields:
         #start with urls:
@@ -181,14 +181,13 @@ class Parse:
                              "you'll've": "you shall have / you will have","you're": "you are","you've": "you have"}
 
             if word in shortcutDict.keys():
-                i=numIndex
                 listWithoutPunc.pop(numIndex)
                 word = shortcutDict[word]
                 for term in word.split(' '):
                     if('/' != term):
-                        listWithoutPunc.insert(i, term)
-                        i+=1
-                numIndex = i
+                        listWithoutPunc.insert(numIndex, term)
+                        numIndex+=1
+
 
 
             shortscriptDict = {"⁰":"0","¹":"1","²":"2","³":"3","⁴":"4","⁵":"5" ,"⁶":"6","⁷":"7","⁸":"8","⁹":"9",
@@ -207,7 +206,10 @@ class Parse:
 
 
 
-            if(('.' or ',' or '/' or '-') in word and len(word) > 1):
+            if(('.' in word or ',' in word or '/' in word or '-' in word)):
+                if (word == ',' or word == '.' or word == '/' or word == '-'):
+                    listWithoutPunc.pop(numIndex)
+                    continue
                 for i in [',','.','/','-']:
                     seperateWordList = word.split(i)
                     isNumber = True
@@ -245,6 +247,10 @@ class Parse:
                             listWithoutPunc.pop(numIndex)
                             place = numIndex
                             for w in seperateWordList:
+                                if("www" in w):
+                                    listWithoutPunc.insert(place, "www")
+                                    w = w[4:]
+                                    place += 1
                                 listWithoutPunc.insert(place,w)
                                 place+=1
                     else:
@@ -262,8 +268,6 @@ class Parse:
                             listWithoutPunc[numIndex] = word
                         else:
                             continue
-                if(word == ''): # Delete non words
-                    listWithoutPunc.remove('')
         return listWithoutPunc
 
     def isfloat(value):
