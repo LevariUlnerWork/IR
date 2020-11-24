@@ -95,6 +95,8 @@ class Parse:
                     texts_list[i]+=url_list[i]
             i+=1
         full_text, retweet_text, quote_text, retweet_quoted_text = texts_list
+
+
         try: #trying to parse the text, if it failed - we loose the term of this tweet, but the IR continues
             tokenized_text = []
             if("RT" not in full_text):
@@ -508,15 +510,15 @@ class Parse:
                             wordToken = year
             else:
                 listOfTokens.pop(wordIndex)
-                continue
 
 
+        """
         #ENTITY RECOGNIZE - because its without '.' if before and after the point there is a entity name it will saved as one
         nlp = spacy.load("en_core_web_sm")
         entityDict = {}
         entityRecognize = nlp(text)
         for entity in entityRecognize.ents:
-            eIndex = listOfTokens.index(entity)
+            eIndex = listOfTokens.index(str(entity))
             entityList = entity.split(' ')
             listOfTokens.insert(eIndex, entity)
             entityDict[entity] = eIndex
@@ -524,29 +526,52 @@ class Parse:
                 for i in range(1,len(entityList)):
                     listOfTokens.remove(eIndex+i)
 
+        """
 
         return listOfTokens
 
-        def identifyTerms(queryTokens, docTokens): #----------------MOVE TO RANKER--------------------------
-            term = ""
-            termList=[]
-            i = 0
-            j = 0
-            for i in queryTokens[i]:
-                for j in docTokens[j]:
-                    if(queryTokens[i] == docTokens[j]):
-                        found = True
-                        l=1
-                        while(found):
-                            if(queryTokens[i+l] == docTokens[j+l]):
-                                term += queryTokens[i] + queryTokens[i+l]
-                                l += 1
-                                i += 1
-                                j += 1
-                            else:
-                                found = False
-                                termList.append(term)
-            return termList
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def identifyTerms(queryTokens, docTokens): #----------------MOVE TO RANKER--------------------------
+        term = ""
+        termList=[]
+        i = 0
+        j = 0
+        for i in queryTokens[i]:
+            for j in docTokens[j]:
+                if(queryTokens[i] == docTokens[j]):
+                    found = True
+                    l=1
+                    while(found):
+                        if(queryTokens[i+l] == docTokens[j+l]):
+                            term += queryTokens[i] + queryTokens[i+l]
+                            l += 1
+                            i += 1
+                            j += 1
+                        else:
+                            found = False
+                            termList.append(term)
+        return termList
 
 
 
