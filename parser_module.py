@@ -449,7 +449,7 @@ class Parse:
 
 
                 # for case: Numbers
-                if (Parse.isfloat(wordToken.replace('.', '', 1))):
+                if (Parse.isfloat(wordToken.replace('.', '', 1)) and wordToken != "inf"):
                     wordTokenNumber = float(wordToken)
 
                     # if there are more than 3 digit before the point

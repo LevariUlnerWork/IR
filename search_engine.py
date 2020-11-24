@@ -1,3 +1,4 @@
+import time
 from reader import ReadFile
 import stemmer
 from configuration import ConfigClass
@@ -40,6 +41,8 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
         documents_list = r.read_file(file_name=listOfDoc[i])
         # Iterate over every document in the file
         for idx, document in enumerate(documents_list):
+
+            startParse = time.time()
             # parse the document
             parsed_document = p.parse_doc(document)
             number_of_documents += 1
@@ -47,9 +50,11 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
             pdl = len(parsed_document.term_doc_dictionary.keys()) #term_dict length
             if(pdl > 0):
                 indexer.add_new_doc(parsed_document)
-            d = 1
+            endParse = time.time()
+            print("elapsed time %s" % (endParse - startParse))
         i += 1
     print('Finished parsing and indexing. Starting to export files')
+
 
     utils.save_obj(indexer.inverted_idx, "inverted_idx")
     utils.save_obj(indexer.postingDict, "posting")
