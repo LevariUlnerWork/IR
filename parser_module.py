@@ -61,7 +61,9 @@ class Parse:
         retweet_quoted_indices = doc_as_list[13]
         term_dict = {}
 
-        #isit = self.parse_sentence("'จากliveจีบเด็กของป๋าในวันนั้น สู่ #ต้นหนชลธี ในวันนี้ -///- #ป๊อดหิวข้าว 🎉🎉🎉🎉  https://t.co/ElCpYcGA3R'") #to check ourselves texts
+        #fix - 132,000+
+
+        #isit = self.parse_sentence("https://twitter.com/i/web/status/1281616586273468416") #to check ourselves texts
         #TODO: delete terms: '/-', "\'","\"
         #TODO: rerun spacy at Noya's computer
 
@@ -365,7 +367,7 @@ class Parse:
                     else:
                         #For case: "#StayAtHome"
                         wordToken = wordToken[1:] #wordToken = "StayAtHome"
-                        listOfFinal = re.findall('[A-Z][^A-Z]*',finalWord) #listOfFinal = [Stay,At,U,S,A] || [Stay,At,Home]
+                        listOfFinal = re.findall('[A-Z][^A-Z]*',wordToken) #listOfFinal = [Stay,At,U,S,A] || [Stay,At,Home]
                         correctWord = ""
                         for j in listOfFinal:
                             if(len(j) == 1):

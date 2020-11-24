@@ -52,12 +52,13 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
                 indexer.add_new_doc(parsed_document)
             endParse = time.time()
             print("elapsed time %s" % (endParse - startParse))
+            print ("Tw Num %s" % (number_of_documents))
         i += 1
     print('Finished parsing and indexing. Starting to export files')
 
 
     utils.save_obj(indexer.inverted_idx, "inverted_idx")
-    utils.save_obj(indexer.postingDict, "posting")
+    utils.save_obj(indexer.postingDict, "posting")#Delete this!
 
     #TODO: disable the option above and save posting files by 50,000 terms.
 
@@ -77,7 +78,7 @@ def search_and_rank_query(query, inverted_index, k):
     return searcher.ranker.retrieve_top_k(ranked_docs, k)
 
 
-def main(corpus_path = "",output_path = "",stemming=False,queries = [],num_docs_to_retrieve = 0):
+def main(corpus_path = "",output_path = "",stemming=False,queries = ["What to do"],num_docs_to_retrieve = 0):
     run_engine(corpus_path = "",output_path = "",stemming=False)
     #query = input("Please enter a query: ")
     if(type(queries) == str):
