@@ -71,7 +71,7 @@ class Parse:
         new_urls=[]
         for realUrlText in old_ulrs:
             realUrlList=[]
-            if type(realUrlText) == str:
+            if type(realUrlText) == str and len(realUrlText) > 2: #url {} was added
                 realUrlList = realUrlText.split(':') # realUrlList = {https, //t.co.. , https, //www.twitter.com...}
             real_url_text=""
             if(len(realUrlList) == 4):
@@ -510,7 +510,7 @@ class Parse:
                 listOfTokens.pop(wordIndex)
                 continue
 
-        """
+
         #ENTITY RECOGNIZE - because its without '.' if before and after the point there is a entity name it will saved as one
         nlp = spacy.load("en_core_web_sm")
         entityDict = {}
@@ -524,7 +524,7 @@ class Parse:
                 for i in range(1,len(entityList)):
                     listOfTokens.remove(eIndex+i)
 
-        """
+
         return listOfTokens
 
         def identifyTerms(queryTokens, docTokens): #----------------MOVE TO RANKER--------------------------
