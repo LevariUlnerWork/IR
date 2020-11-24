@@ -61,10 +61,10 @@ class Parse:
         retweet_quoted_indices = doc_as_list[13]
         term_dict = {}
 
-        isit = self.parse_sentence("'จากliveจีบเด็กของป๋าในวันนั้น สู่ #ต้นหนชลธี ในวันนี้ -///- #ป๊อดหิวข้าว 🎉🎉🎉🎉  https://t.co/ElCpYcGA3R'") #to check ourselves texts
+        #isit = self.parse_sentence("'จากliveจีบเด็กของป๋าในวันนั้น สู่ #ต้นหนชลธี ในวันนี้ -///- #ป๊อดหิวข้าว 🎉🎉🎉🎉  https://t.co/ElCpYcGA3R'") #to check ourselves texts
         #TODO: delete terms: '/-', "\'","\"
-        #TODO: Check if to undo fulltext if it starts with "RT"
-        #TODO: do try-catch to make this parser to allways
+        #TODO: rerun spacy at Noya's computer
+
         #creating the real fields:
         #start with urls:
         old_ulrs = [url,retweet_url,quote_url,retweet_quoted_url]

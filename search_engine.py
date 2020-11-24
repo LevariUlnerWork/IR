@@ -53,6 +53,8 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
     utils.save_obj(indexer.inverted_idx, "inverted_idx")
     utils.save_obj(indexer.postingDict, "posting")
 
+    #TODO: disable the option above and save posting files by 50,000 terms.
+
 
 def load_index():
     print('Load inverted index')
