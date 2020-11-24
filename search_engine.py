@@ -41,7 +41,7 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
         # Iterate over every document in the file
         for idx, document in enumerate(documents_list):
             # parse the document
-            parsed_document = p.parse_doc(document, indexer)
+            parsed_document = p.parse_doc(document)
             number_of_documents += 1
             # index the document data
             if(len(parsed_document.term_doc_dictionary) != 0):
