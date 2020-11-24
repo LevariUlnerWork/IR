@@ -19,8 +19,8 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
     if(stemming):
         stemmerLocal = stemmer()
     r = ReadFile(corpus_path=config.get__corpusPath())
-    p = Parse(stemmerLocal)
     indexer = Indexer(config)
+    p = Parse(stemmerLocal,indexer) #Changed by Lev
 
     #read all files from all folders:
     listOfFold = os.listdir(config.get__corpusPath()) #list of folders
@@ -41,7 +41,7 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
         # Iterate over every document in the file
         for idx, document in enumerate(documents_list):
             # parse the document
-            parsed_document = p.parse_doc(document)
+            parsed_document = p.parse_doc(document, indexer)
             number_of_documents += 1
             # index the document data
             if(len(parsed_document.term_doc_dictionary) != 0):

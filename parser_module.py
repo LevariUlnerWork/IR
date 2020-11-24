@@ -8,7 +8,7 @@ import stemmer
 
 class Parse:
 
-    def __init__(self, stemming=None):
+    def __init__(self, stemming=None, iIndexer=None):
         #self.stop_words = stopwords.words('english') - we are not use this stop words
         full_path = open('stop-words.txt',"r")
         listOfStopWords = full_path.read()
@@ -16,6 +16,7 @@ class Parse:
         #print(listOfStopWords)
         full_path.close()
         self.stop_words = listOfStopWords.split(" ")
+        self.indexer = iIndexer
         #print(type(self.stop_words))
 
 
@@ -94,21 +95,35 @@ class Parse:
                     texts_list[i]+=url_list[i]
             i+=1
         full_text, retweet_text, quote_text, retweet_quoted_text = texts_list
+        try: #trying to parse the text, if it failed - we loose the term of this tweet, but the IR continues
+            tokenized_text = []
+            if("RT" not in full_text):
+                tokenized_text = self.parse_sentence(full_text)
+            if(type(retweet_text) == str and len(retweet_text)!= ''):
+                tokenized_text += self.parse_sentence(retweet_text)
+            if (type(quote_text) == str and len(quote_text)!= ''):
+                tokenized_text += self.parse_sentence(quote_text)
+            if (type(retweet_quoted_text) == str and len(retweet_quoted_text) != ''):
+                tokenized_text += self.parse_sentence(retweet_quoted_text)
 
-        tokenized_text = self.parse_sentence(full_text)
+        except:
+            tokenized_text = []
 
-        if(type(retweet_text) == str and len(retweet_text)!= ''):
-            tokenized_text += self.parse_sentence(retweet_text)
-        if (type(quote_text) == str and len(quote_text)!= ''):
-            tokenized_text += self.parse_sentence(quote_text)
-        if (type(retweet_quoted_text) == str and len(retweet_quoted_text) != ''):
-            tokenized_text += self.parse_sentence(retweet_quoted_text)
 
         doc_length = len(tokenized_text)  # after text operations.
 
         #Do Captial letters here
         index= 0
         for term in tokenized_text: #termDict:{key=term:[[indexes],freq]
+
+            if len(term) > 1 and term[0].isupper():# Change the words to Lower case or Upper Case
+                # for case: Max -> max
+                if (term.lower() in self.indexer.inverted_idx.keys()):
+                    term = term.lower()
+                # for case: Max -> MAX
+                else:
+                    term = term.upper()
+
             if term not in term_dict.keys():
                 term_dict[term] = [[index],1]
             else:
@@ -510,22 +525,7 @@ class Parse:
                     listOfTokens.remove(eIndex+i)
 
         """
-        #Change the words to Lower case or Upper Case
-        for wordBeChange in listOfTokens:
-
-            #for case: Max -> MAX/max
-            if len(wordBeChange) > 1 and wordBeChange[0].isupper() and not wordBeChange[1].isupper():
-
-                #for case: Max -> max
-                if(wordBeChange.lower() in listOfTokens):
-                    listOfTokens[listOfTokens.index(wordBeChange)] = wordBeChange.lower()
-
-                #for case: Max -> MAX
-                else:
-                    listOfTokens[listOfTokens.index(wordBeChange)] = wordBeChange.upper()
-
         return listOfTokens
-
 
         def identifyTerms(queryTokens, docTokens): #----------------MOVE TO RANKER--------------------------
             term = ""
