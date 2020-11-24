@@ -4,6 +4,7 @@ class Indexer:
     def __init__(self, config):
         self.inverted_idx = {} # (key - term): [num Of docs, freq in corpus, pointer to posting file]
         self.term_max_freq = {} # (key - DocId): [Maxterm, freq, [single terms]]
+        self.postingDictNames = ["posting1"] # Names of posting files
         self.postingDict = {} # (key - term): Heap:[freq, docID, [indexes]]
         self.config = config
 
@@ -16,6 +17,7 @@ class Indexer:
         """
         #TODO: delete t.co from the corpus.
         #TODO: delete 1 time show terms
+        #TODO: split posting files
         docID = document.tweet_id
         document_dictionary = document.term_doc_dictionary # document_dictionary = {term:[[indexes],freq]
         freq_terms = {} # save the freq of the term in this doc

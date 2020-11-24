@@ -44,7 +44,8 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
             parsed_document = p.parse_doc(document)
             number_of_documents += 1
             # index the document data
-            if(len(parsed_document.term_doc_dictionary) != 0):
+            pdl = len(parsed_document.term_doc_dictionary.keys()) #term_dict length
+            if(pdl > 0):
                 indexer.add_new_doc(parsed_document)
             d = 1
         i += 1
@@ -71,10 +72,29 @@ def search_and_rank_query(query, inverted_index, k):
     return searcher.ranker.retrieve_top_k(ranked_docs, k)
 
 
-def main(corpus_path = "",output_path = "",stemming=False,queries = [],num_docs_to_rerieve = 0):
+def main(corpus_path = "",output_path = "",stemming=False,queries = [],num_docs_to_retrieve = 0):
     run_engine(corpus_path = "",output_path = "",stemming=False)
-    query = input("Please enter a query: ")
-    k = int(input("Please enter number of docs to retrieve: "))
-    inverted_index = load_index()
-    for doc_tuple in search_and_rank_query(query, inverted_index, k):
-        print('tweet id: {}, score (unique common words with query): {}'.format(doc_tuple[0], doc_tuple[1]))
+    #query = input("Please enter a query: ")
+    if(type(queries) == str):
+        try: #If there is a file of queries
+            r2 = ReadFile(queries)
+            queries_list =r2.read_file(queries)
+        except:#if queries is one line of query
+            queries_list = [queries]
+
+    else: #if queries is a list of queries
+        queries_list = queries
+    try:
+        k = int(input("Please enter number of docs to retrieve: "))
+        inverted_index = load_index()
+        for query in queries_list:
+            if(query[2] == " "):
+                query=query[3:]
+            else:
+                query=query[2:]
+            print('\n' + 'Query: ' + query)
+            print('results:' + '\n')
+            for doc_tuple in search_and_rank_query(query, inverted_index, k):
+                print('tweet id: {}, score (unique common words with query): {}'.format(doc_tuple[0], doc_tuple[1]))
+    except:
+        print("Please enter queries first")
