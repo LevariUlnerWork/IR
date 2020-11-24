@@ -514,7 +514,7 @@ class Parse:
                 listOfTokens.pop(wordIndex)
 
 
-        """
+
         #ENTITY RECOGNIZE - because its without '.' if before and after the point there is a entity name it will saved as one
         nlp = spacy.load("en_core_web_sm")
         entityDict = {}
@@ -528,7 +528,7 @@ class Parse:
                 for i in range(1,len(entityList)):
                     listOfTokens.remove(eIndex+i)
 
-        """
+
 
         return listOfTokens
 
