@@ -4,8 +4,9 @@ class Indexer:
     def __init__(self, config):
         self.inverted_idx = {} # (key - term): [num Of docs, freq in corpus, pointer to posting file]
         self.term_max_freq = {} # (key - DocId): [Maxterm, freq, [single terms]]
-        self.postingDictNames = ["posting1"] # Names of posting files
-        self.postingDict = {} # (key - term): Heap:[freq, docID, [indexes]]
+        self.postingDictNames = ["posting0"] # Names of posting files
+        self.currentFileNumber = 0 # which number of file we are
+        self.postingDict = {} # Current posting file (key - term): Heap:[freq, docID, [indexes]]
         self.config = config
 
     def add_new_doc(self, document):
@@ -57,3 +58,13 @@ class Indexer:
             if(freq_terms[i] == maxFreq):
                 maxTerms.append(i)
         self.term_max_freq[docID] = [maxTerms,maxFreq,listOfUniques]
+
+    def savePostingFile(self):
+        """
+        This function is made to order the indexer to output the posting files
+        """
+        #To save the posting_dict as a file:
+        # utils.save_obj(self.postingDict, self.postingDictNames[0] )
+
+        self.currentFileNumber += 1
+        self.postingDictNames.insert(0, "posting%s" % (self.currentFileNumber))

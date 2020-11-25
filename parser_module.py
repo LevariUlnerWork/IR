@@ -33,9 +33,54 @@ class Parse:
         #if(len(w.lower() for w in query if w not in self.stop_words) == 0):
         #    text_tokens_without_stopwords = [w.lower() for w in text_tokens]
         #else:
-        text_tokens_without_stopwords = [w.lower() for w in text_tokens if w not in self.stop_words]
+        text_tokens_without_stopwords = [w for w in text_tokens if w not in self.stop_words]
         if(self.stemmering != None):
-            text_tokens_without_stopwords = stemmer.stem_list(text_tokens_without_stopwords)
+            text_tokens_without_stopwords = self.stemmering.stem_list(text_tokens_without_stopwords)
+
+        #Ishuyot:
+        text_before_parse = text.split(' ')
+        real_index_word = 0
+        for index_word in range (len(text_before_parse)):
+            word = text_before_parse[index_word]
+            if(index_word<real_index_word):
+                continue
+            if(len(word) > 1 and word[0].isupper()): #for Max Rossenfield
+                next_index = index_word + 1
+                while (next_index < len(text_before_parse) and len(text_before_parse[next_index]) > 1 and text_before_parse[next_index][0].isupper()):
+                    stopHere = False
+                    next_word = text_before_parse[next_index]
+                    if('.' in next_word or ',' in next_word or '?' in next_word or '!' in next_word): #If we should stop
+                        stopHere = True
+                        if('.' in next_word):
+                            next_word = next_word.split('.')[0]
+
+                        if(',' in next_word):
+                            next_word = next_word.split('.')[0]
+
+                        if('?' in next_word):
+                            next_word = next_word.split('.')[0]
+
+                        if('!' in next_word):
+                            next_word = next_word.split('.')[0]
+                    else:
+                        next_word = next_word
+
+                    if('-' in next_word): #To split: "Donald-Trump"
+                        next_word = next_word.split
+                        for i in next_word:
+                            word = word + " " + i
+                        real_index_word += 1
+                        next_index += 1
+                    else: # Donald Trump
+                        word += " " + next_word
+                        real_index_word += 1
+                        next_index += 1
+
+                    if(stopHere == True):
+                        break
+                if(' ' in word):
+                    text_tokens_without_stopwords.insert(index_word, word)
+
         return text_tokens_without_stopwords
 
     #this function is used for the tweets
@@ -63,7 +108,7 @@ class Parse:
 
         #fix - 132,000+
 
-        #isit = self.parse_sentence("https://twitter.com/i/web/status/1281616586273468416") #to check ourselves texts
+        #isit = self.parse_sentence("'COVID19inSA'") #to check ourselves texts
         #TODO: delete terms: '/-', "\'","\"
         #TODO: rerun spacy at Noya's computer
 
@@ -120,13 +165,8 @@ class Parse:
         index= 0
         for term in tokenized_text: #termDict:{key=term:[[indexes],freq]
 
-            if len(term) > 1 and term[0].isupper():# Change the words to Lower case or Upper Case
-                # for case: Max -> max
-                if (term.lower() in self.indexer.inverted_idx.keys()):
-                    term = term.lower()
-                # for case: Max -> MAX
-                else:
-                    term = term.upper()
+            if(term == "t.co"):
+                continue
 
             if term not in term_dict.keys():
                 term_dict[term] = [[index],1]
@@ -453,7 +493,7 @@ class Parse:
 
 
                 # for case: Numbers
-                if (Parse.isfloat(wordToken.replace('.', '', 1)) and wordToken != "inf"):
+                if (Parse.isfloat(wordToken.replace('.', '', 1)) and wordToken[0] != 'i' and wordToken[0] != 'I'): # if the word is like "inf" or "infinity" it would false positivily think it is a number
                     wordTokenNumber = float(wordToken)
 
                     # if there are more than 3 digit before the point
@@ -513,7 +553,7 @@ class Parse:
             else:
                 listOfTokens.pop(wordIndex)
 
-
+        '''
         #ENTITY RECOGNIZE - because its without '.' if before and after the point there is a entity name it will saved as one
         nlp = spacy.load("en_core_web_sm")
         entityDict = {}
@@ -526,7 +566,7 @@ class Parse:
             if(len(entityList) > 1):
                 for i in range(1,len(entityList)):
                     listOfTokens.remove(eIndex+i)
-
+        '''
 
 
         return listOfTokens

@@ -17,11 +17,12 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
     number_of_documents = 0
     stemmerLocal = None
     config = ConfigClass()
-    if(stemming):
-        stemmerLocal = stemmer()
     r = ReadFile(corpus_path=config.get__corpusPath())
     indexer = Indexer(config)
-    p = Parse(stemmerLocal,indexer) #Changed by Lev
+    if(stemming==True):
+        stemmerLocal = stemmer.Stemmer(indexer)
+    p = Parse(stemmerLocal, indexer)  # Changed by Lev
+
 
     #read all files from all folders:
     listOfFold = os.listdir(config.get__corpusPath()) #list of folders
@@ -35,30 +36,40 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
                 continue
             listOfDoc += [folder + "/" + file]
 
-    i = 2 #first file
+    i = 2 #first file index
+    documents_list = [] #The list of tweets
     #Read all files:
+    startRead = time.time()
     while i < 3: #Real is : while i < len(os.listdir(config.get__corpusPath())):
-        documents_list = r.read_file(file_name=listOfDoc[i])
-        # Iterate over every document in the file
-        for idx, document in enumerate(documents_list):
-
-            startParse = time.time()
-            # parse the document
-            parsed_document = p.parse_doc(document)
-            number_of_documents += 1
-            # index the document data
-            pdl = len(parsed_document.term_doc_dictionary.keys()) #term_dict length
-            if(pdl > 0):
-                indexer.add_new_doc(parsed_document)
-            endParse = time.time()
-            print("elapsed time %s" % (endParse - startParse))
-            print ("Tw Num %s" % (number_of_documents))
+        documents_list += r.read_file(file_name=listOfDoc[i])
         i += 1
+    endRead = time.time()
+    readTime = endRead - startRead
+    print("elapsed time %s" % (endRead - startRead))
+
+
+    # Iterate over every document in the file
+    for idx, document in enumerate(documents_list):
+
+        startParse = time.time()
+        # parse the document
+        parsed_document = p.parse_doc(document)
+        number_of_documents += 1
+        # index the document data
+        pdl = len(parsed_document.term_doc_dictionary.keys()) #term_dict length
+        if(pdl > 0):
+            indexer.add_new_doc(parsed_document)
+        endParse = time.time()
+        print("elapsed time %s" % (endParse - startParse))
+        print ("Tw Num %s" % (number_of_documents))
+        #if(len(listOfDoc) / idx % 10 == 0 ):
+
+            #indexer.postingDictNames.insert(0, "posting%s" % int(len(listOfDoc) / idx % 10 == 0))
     print('Finished parsing and indexing. Starting to export files')
 
 
     utils.save_obj(indexer.inverted_idx, "inverted_idx")
-    utils.save_obj(indexer.postingDict, "posting")#Delete this!
+    #Delete this!
 
     #TODO: disable the option above and save posting files by 50,000 terms.
 
@@ -78,8 +89,8 @@ def search_and_rank_query(query, inverted_index, k):
     return searcher.ranker.retrieve_top_k(ranked_docs, k)
 
 
-def main(corpus_path = "",output_path = "",stemming=False,queries = ["What to do"],num_docs_to_retrieve = 0):
-    run_engine(corpus_path = "",output_path = "",stemming=False)
+def main(corpus_path = "",output_path = "",stemming=True,queries = ["What to do"],num_docs_to_retrieve = 0):
+    run_engine(corpus_path = "",output_path = "",stemming=True)
     #query = input("Please enter a query: ")
     if(type(queries) == str):
         try: #If there is a file of queries
