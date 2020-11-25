@@ -19,7 +19,7 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
     config = ConfigClass()
     r = ReadFile(corpus_path=config.get__corpusPath())
     indexer = Indexer(config)
-    if(stemming==True):
+    if(stemming == True):
         stemmerLocal = stemmer.Stemmer(indexer)
     p = Parse(stemmerLocal, indexer)  # Changed by Lev
 
@@ -45,7 +45,7 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
         i += 1
     endRead = time.time()
     readTime = endRead - startRead
-    print("elapsed time %s" % (endRead - startRead))
+    print("elapsed time %s" % readTime)
 
 
     # Iterate over every document in the file
@@ -106,9 +106,9 @@ def main(corpus_path = "",output_path = "",stemming=True,queries = ["What to do"
         inverted_index = load_index()
         for query in queries_list:
             if(query[2] == " "):
-                query=query[3:]
+                query = query[3:]
             else:
-                query=query[2:]
+                query = query[2:]
             print('\n' + 'Query: ' + query)
             print('results:' + '\n')
             for doc_tuple in search_and_rank_query(query, inverted_index, k):

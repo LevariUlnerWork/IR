@@ -34,13 +34,13 @@ class Parse:
         if(self.stemmering != None):
             text_tokens_without_stopwords = self.stemmering.stem_list(text_tokens_without_stopwords)
 
-        #Ishuyot:
+        #EntityRecognition:
         text = text.encode("ascii", "ignore").decode()  # delete all illegal characters like emojis
         text_before_parse = text.split(' ')
         real_index_word = 0
-        for index_word in range (len(text_before_parse)):
+        for index_word in range(len(text_before_parse)):
             word = text_before_parse[index_word]
-            if(index_word<real_index_word):
+            if(index_word < real_index_word): #is there index that smaller than 0
                 continue
             if(len(word) > 1 and (word[0].isupper() or '-' in word) and ('.' not in word and  ',' not in word and '?' not in word and '!' not in word and ':' not in word)): #for Max Rossenfield
                 next_index = index_word + 1
@@ -51,13 +51,10 @@ class Parse:
                         stopHere = True
                         if('.' in next_word):
                             next_word = next_word.split('.')[0]
-
                         if(',' in next_word):
                             next_word = next_word.split('.')[0]
-
                         if('?' in next_word):
                             next_word = next_word.split('.')[0]
-
                         if('!' in next_word):
                             next_word = next_word.split('.')[0]
                         if (':' in next_word):
@@ -161,7 +158,7 @@ class Parse:
         index= 0
         for term in tokenized_text: #termDict:{key=term:[[indexes],freq]
 
-            if(term == "t.co"):
+            if(term == "t.co" or "http"): #think about more words
                 continue
 
             if term not in term_dict.keys():
@@ -169,7 +166,7 @@ class Parse:
             else:
                 term_dict[term][1] += 1
                 term_dict[term][0].append(index)
-            index+=1
+            index += 1
 
         document = Document(tweet_id, tweet_date, full_text, url, retweet_text, retweet_url, quote_text,
                             quote_url, term_dict, doc_length)
@@ -248,8 +245,7 @@ class Parse:
                 if(toJump):
                     continue
 
-
-
+            #checkPowerScript
             shortscriptDict = {"⁰":"0","¹":"1","²":"2","³":"3","⁴":"4","⁵":"5" ,"⁶":"6","⁷":"7","⁸":"8","⁹":"9",
                                "ᵃ":"a","ᵇ":"b","ᶜ":"c","ᵈ":"d","ᵉ":"e","ᶠ":"f","ᵍ":"g","ʰ":"h","ᶦ":"i","ʲ":"j",
                                "ᵏ":"k","ˡ":"l","ᵐ":"m","ⁿ":"n","ᵒ":"o","ᵖ":"p","۹":"q","ʳ":"r","ˢ":"s","ᵗ":"t",
@@ -258,7 +254,6 @@ class Parse:
                                "ᴼ":"O","ᴾ":"P","Q":"Q","ᴿ":"R","ᵀ":"T","ᵁ":"U","ⱽ":"V","ᵂ":"W",
                                "⁺":"+","⁻":"-","⁼":"=","⁽":"(","⁾":")"}
 
-
             listOfPow = list(word)
             realWord = ""
             for pow in listOfPow:
@@ -266,10 +261,11 @@ class Parse:
                    realWord += shortscriptDict[pow]
                 else:
                     realWord += pow
+
             listWithoutPunc.pop(numIndex)
             listWithoutPunc.insert(numIndex, realWord)
-            word=realWord
-            word = word.encode("ascii", "ignore").decode()  # delete all illegal characters like emojis
+            word = realWord
+            word = word.encode("ascii", "ignore").decode()  # delete all illegal characters like emojis --------AGAIN?
             listWithoutPunc[numIndex] = word
             if(('.' in word or ',' in word or '/' in word or '-' in word)):
                 if (word == ',' or word == '.' or word == '/' or word == '-'):
@@ -343,16 +339,15 @@ class Parse:
         except ValueError:
             return False
 
-
     def tokenize_words(text):
         listOfTokens = Parse.punctuation(text)
 
+        for wordIndex in range(0,listOfTokens):
 
-        for wordToken in listOfTokens:
-
-            wordIndex= listOfTokens.index(wordToken)
+            wordToken= listOfTokens[wordIndex]
 
             if(len(wordToken) > 0):
+
                 #tags
                 if(wordToken[0] == '@' and len(wordToken) != 1):
                     listOfTokens.insert(wordIndex ,"@")
@@ -551,30 +546,9 @@ class Parse:
                             wordToken = year
 
 
-
         while '' in listOfTokens:
             listOfTokens.remove('')
         return listOfTokens
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

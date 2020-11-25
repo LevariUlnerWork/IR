@@ -1,22 +1,25 @@
 import heapq #TODO: Change to priority queue
+from queue import PriorityQueue
 class Indexer:
 
     def __init__(self, config):
-        #self.inverted_idx_nums = {} # (key - term): [num Of docs, freq in corpus, pointer to posting file]
-        # self.inverted_idx_others = {} # (key - term): [num Of docs, freq in corpus, pointer to posting file]
-        #self.inverted_idx_ishus = {} # (key - term): [num Of docs, freq in corpus, pointer to posting file]
-        # self.inverted_idx_strs = {} # (key - term): [num Of docs, freq in corpus, pointer to posting file]
-        self.inverted_idx = [{},{},{},{}] # self.inverted_idx = [self.inverted_idx_nums,self.inverted_idx_strs, self.inverted_idx_ishus, self.inverted_idx_others]
+        self.inverted_idx_nums = {}  # (key - term): [num Of docs, freq in corpus, pointer to posting file]
+        self.inverted_idx_others = {}  # (key - term): [num Of docs, freq in corpus, pointer to posting file]
+        self.inverted_idx_ents = {}  # (key - term): [num Of docs, freq in corpus, pointer to posting file]
+        self.inverted_idx_strs = {}  # (key - term): [num Of docs, freq in corpus, pointer to posting file]
 
-        #self.term_max_freq = {} # (key - DocId): [Maxterm, freq, [single terms]]
+        self.inverted_idx = [{}, {}, {}, {}]  # self.inverted_idx = [inverted_idx_nums, inverted_idx_ents, inverted_idx_others, inverted_idx_strs]
 
-        self.postingDictNames = ["postingNums0","postingStrs0","postingIshus0","postingOthers0"] # Names of posting files
-        self.currentFileNumber = 0 # which number of file we are
-        #self.postingDictNums = {}  # Current posting file (key - term): Heap:[freq, docID, [indexes]]
-        # self.postingDictOthers = {}  # Current posting file (key - term): Heap:[freq, docID, [indexes]]
-        #self.postingDictIshus = {}  # Current posting file (key - term): Heap:[freq, docID, [indexes]]
-        # self.postingDictStrs = {}  # Current posting file (key - term): Heap:[freq, docID, [indexes]]
-        self.postingDicts = [{},{},{},{}] #self.posting_file = [self.postingDictNums,self.postingDictStrs, self.postingDictIshus, self.postingDictOthers]
+        self.term_max_freq = {}  # (key - DocId): [[maxterms], freq, [single terms]]
+
+        self.postingDictNames = ["postingNums0","postingStrs0","postingEnts0","postingOthers0"] #Names of posting files
+        self.currentFileNumber = 0  # which number of file we are
+        self.postingDictNums = {}  # Current posting file (key - term): Heap:[freq, docID, [indexes]]
+        self.postingDictOthers = {}  # Current posting file (key - term): Heap:[freq, docID, [indexes]]
+        self.postingDictEnts = {}  # Current posting file (key - term): Heap:[freq, docID, [indexes]]
+        self.postingDictStrs = {}  # Current posting file (key - term): Heap:[freq, docID, [indexes]]
+
+        self.postingDicts = [{}, {}, {}, {}]  # self.posting_file = [postingDictNums, postingDictOthers, postingDictEnts, postingDictStrs]
 
         self.config = config
 
@@ -42,25 +45,26 @@ class Indexer:
                 #Update the local dicts: freq of the term in this doc:
                 type = [0,1,2,3]
                 freq_terms[term] = document_dictionary[term][1]
-                if(Indexer.isfloat(term) == True):
+                if(Indexer.isfloat(term) == True):  #numbers
                     type = 0
-                elif (len(term) == 1 ):
+                elif (len(term) == 1):  #others
                     type = 1
-                elif (' ' in term):
+                elif (' ' in term): #entities
                     type = 2
-                else:
+                else:  #strings
                     type = 3
                 # Update the public inverted index and termMax
                 if term not in self.inverted_idx[type].keys():
-                    self.postingDicts[type][term] = []
-                    self.inverted_idx[type][term] = [1,document_dictionary[term][1],self.postingDictNames[type]]#TODO: Change the self.postingDict to the name of the posting file
+                    self.postingDicts[type][term] = PriorityQueue()
+                    self.inverted_idx[type][term] = [1, document_dictionary[term][1], self.postingDictNames[type]] #TODO: Change the self.postingDict to the name of the posting file
 
                 else:
                     #update inv_dict:
                     self.inverted_idx[type][term][0] += 1 # add another doc to the count in the inv_dict
                     self.inverted_idx[type][term][1] += document_dictionary[term][1]
 
-                heapq.heappush(self.postingDicts[type][term],[document_dictionary[term][1],docID,document_dictionary[term][0]])
+                self.postingDicts[type][term].put(document_dictionary[term][1], docID, document_dictionary[term][0])
+                #heapq.heappush(self.postingDicts[type][term],[document_dictionary[term][1],docID,document_dictionary[term][0]])
                 if document_dictionary[term][1] == 1:
                     listOfUniques.append(term)
 
@@ -69,15 +73,24 @@ class Indexer:
             except:
                 print('problem with the following key {}'.format(term[0]))
 
-        """
-        #update: maxTerm dictiontary
+
+        #update: term_max_freq dictiontary
+        maxFreq = max(document_dictionary.values()[1])
+        maxTerms = []
+        for term in document_dictionary.keys():
+            if(document_dictionary[term][1] == maxFreq):
+                maxTerms.append(term)
+        self.term_max_freq[docID] = [maxTerms, maxFreq, listOfUniques]
+
+        ''''        
         maxFreq = max(freq_terms.values())
         maxTerms = []
         for i in freq_terms.keys():
             if(freq_terms[i] == maxFreq):
                 maxTerms.append(i)
         self.term_max_freq[docID] = [maxTerms,maxFreq,listOfUniques]
-        """
+        '''
+
 
     def savePostingFile(self):
         """
@@ -85,6 +98,7 @@ class Indexer:
         """
         #To save the posting_dict as a file:
         # utils.save_obj(self.postingDicts, self.postingDictNames[0] )
+
 
         self.currentFileNumber += 1
         self.postingDictNames.insert(0, "posting%s" % (self.currentFileNumber))
