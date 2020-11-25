@@ -1,9 +1,6 @@
 import calendar
 import re
-import spacy
-from nltk.stem import PorterStemmer
 from document import Document
-import stemmer
 
 
 class Parse:
@@ -38,18 +35,19 @@ class Parse:
             text_tokens_without_stopwords = self.stemmering.stem_list(text_tokens_without_stopwords)
 
         #Ishuyot:
+        text = text.encode("ascii", "ignore").decode()  # delete all illegal characters like emojis
         text_before_parse = text.split(' ')
         real_index_word = 0
         for index_word in range (len(text_before_parse)):
             word = text_before_parse[index_word]
             if(index_word<real_index_word):
                 continue
-            if(len(word) > 1 and word[0].isupper()): #for Max Rossenfield
+            if(len(word) > 1 and (word[0].isupper() or '-' in word) and ('.' not in word and  ',' not in word and '?' not in word and '!' not in word and ':' not in word)): #for Max Rossenfield
                 next_index = index_word + 1
                 while (next_index < len(text_before_parse) and len(text_before_parse[next_index]) > 1 and text_before_parse[next_index][0].isupper()):
                     stopHere = False
                     next_word = text_before_parse[next_index]
-                    if('.' in next_word or ',' in next_word or '?' in next_word or '!' in next_word): #If we should stop
+                    if('.' in next_word or ',' in next_word or '?' in next_word or '!' in next_word or ':' in next_word): #If we should stop
                         stopHere = True
                         if('.' in next_word):
                             next_word = next_word.split('.')[0]
@@ -62,23 +60,20 @@ class Parse:
 
                         if('!' in next_word):
                             next_word = next_word.split('.')[0]
+                        if (':' in next_word):
+                            next_word = next_word.split('.')[0]
                     else:
                         next_word = next_word
 
-                    if('-' in next_word): #To split: "Donald-Trump"
-                        next_word = next_word.split
-                        for i in next_word:
-                            word = word + " " + i
-                        real_index_word += 1
-                        next_index += 1
-                    else: # Donald Trump
-                        word += " " + next_word
-                        real_index_word += 1
-                        next_index += 1
+                    # Donald Trump | "Alexandria Ocasio-Cortez"
+                    word += " " + next_word
+                    real_index_word += 1
+                    next_index += 1
 
                     if(stopHere == True):
                         break
-                if(' ' in word):
+
+                if(' ' in word or '-' in word):
                     text_tokens_without_stopwords.insert(index_word, word)
 
         return text_tokens_without_stopwords
@@ -107,10 +102,11 @@ class Parse:
         term_dict = {}
 
         #fix - 132,000+
+        #fix - "𝑩𝒓𝒆𝒂𝒌𝒊𝒏𝒈: 𝑯𝒖𝒔𝒉𝒑𝒖𝒑𝒑𝒊 𝒉𝒂𝒔 𝒕𝒆𝒔𝒕𝒆𝒅 𝒑𝒐𝒔𝒊𝒕𝒊𝒗𝒆 𝒇𝒐𝒓 𝑪𝒐𝒗𝒊𝒅-19 𝒊𝒏 𝒑𝒓𝒊𝒔𝒐𝒏."
 
-        #isit = self.parse_sentence("'COVID19inSA'") #to check ourselves texts
+        #isit = self.parse_sentence("") #to check ourselves texts
         #TODO: delete terms: '/-', "\'","\"
-        #TODO: rerun spacy at Noya's computer
+
 
         #creating the real fields:
         #start with urls:
@@ -212,7 +208,7 @@ class Parse:
                              "'cause": "because","could've": "could have","couldn't": "could not","couldn't've": "could not have",
                              "didn't": "did not","doesn't": "does not","don't": "do not","hadn't": "had not","hadn't've": "had not have",
                              "hasn't": "has not","haven't": "have not","he'd": "he had / he would","he'd've": "he would have",
-                             "he'll": "he shall / he will","he'll've": "he shall have / he will have","he's": "he has / he is",
+                             "he'll": "he shall / he will","he'll've": "he shall have / he will have","here's":"here is" ,"he's": "he has / he is",
                              "how'd": "how did","how'd'y": "how do you","how'll": "how will","how's": "how has / how is",
                              "i'd": "I had / I would","i'd've": "I would have","i'll": "I shall / I will","i'll've": "I shall have / I will have",
                              "i'm": "I am","i've": "I have","isn't": "is not","it'd": "it had / it would","it'd've": "it would have",
@@ -238,10 +234,10 @@ class Parse:
                              "y'all've": "you all have","you'd": "you had / you would","you'd've": "you would have","you'll": "you shall / you will",
                              "you'll've": "you shall have / you will have","you're": "you are","you've": "you have"}
 
-            if word in shortcutDict.keys():
+            if word.lower() in shortcutDict.keys():
                 listWithoutPunc.pop(numIndex)
                 i = numIndex
-                word = shortcutDict[word]
+                word = shortcutDict[word.lower()]
                 toJump = False
                 for term in word.split(' '):
                     if('/' != term):
@@ -257,10 +253,10 @@ class Parse:
             shortscriptDict = {"⁰":"0","¹":"1","²":"2","³":"3","⁴":"4","⁵":"5" ,"⁶":"6","⁷":"7","⁸":"8","⁹":"9",
                                "ᵃ":"a","ᵇ":"b","ᶜ":"c","ᵈ":"d","ᵉ":"e","ᶠ":"f","ᵍ":"g","ʰ":"h","ᶦ":"i","ʲ":"j",
                                "ᵏ":"k","ˡ":"l","ᵐ":"m","ⁿ":"n","ᵒ":"o","ᵖ":"p","۹":"q","ʳ":"r","ˢ":"s","ᵗ":"t",
-                               "ᵘ":"u","ᵛ":"v","ʷ":"w","ˣ":"x","ʸ":"y","ᶻ":"z","ᴬ":"A","ᴮ":"B","ᶜ":"C","ᴰ":"D",
-                               "ᴱ":"E","ᶠ":"F","ᴳ":"G","ᴴ":"H","ᴵ":"I","ᴶ":"J","ᴷ":"K","ᴸ":"L","ᴹ":"M","ᴺ":"N",
-                               "ᴼ":"O","ᴾ":"P","Q":"Q","ᴿ":"R","ˢ":"S","ᵀ":"T","ᵁ":"U","ⱽ":"V","ᵂ":"W","ˣ":"X",
-                               "ʸ":"Y","ᶻ":"Z","⁺":"+","⁻":"-","⁼":"=","⁽":"(","⁾":")"}
+                               "ᵘ":"u","ᵛ":"v","ʷ":"w","ˣ":"x","ʸ":"y","ᶻ":"z","ᴬ":"A","ᴮ":"B","ᴰ":"D",
+                               "ᴱ":"E","ᴳ":"G","ᴴ":"H","ᴵ":"I","ᴶ":"J","ᴷ":"K","ᴸ":"L","ᴹ":"M","ᴺ":"N",
+                               "ᴼ":"O","ᴾ":"P","Q":"Q","ᴿ":"R","ᵀ":"T","ᵁ":"U","ⱽ":"V","ᵂ":"W",
+                               "⁺":"+","⁻":"-","⁼":"=","⁽":"(","⁾":")"}
 
 
             listOfPow = list(word)
@@ -412,13 +408,17 @@ class Parse:
                         for j in listOfFinal:
                             if(len(j) == 1):
                                 jFollower=listOfFinal.index(j)+1
-                                if(len(listOfFinal[jFollower]) == 1): #for case: USA
+                                if(jFollower < len(listOfFinal) and len(listOfFinal[jFollower]) == 1): #for case: USA
                                     correctWord = j
-                                    while(len(listOfFinal[jFollower])==1):
+                                    while(jFollower < len(listOfFinal) and len(listOfFinal[jFollower])==1 and listOfFinal[jFollower][0].isupper()):
                                         correctWord+=listOfFinal[jFollower]
                                         listOfFinal.remove(listOfFinal[jFollower])
+
+                                    if (jFollower < len(listOfFinal) and listOfFinal[jFollower][0].isupper()):
+                                        correctWord += listOfFinal[jFollower][0]
+                                        listOfFinal[jFollower]= listOfFinal[jFollower][1:]
                                     j = correctWord
-                                #After: [Stay,At,USA]
+                                    #After: [Stay,At,USA]
 
                             else: # for "Stay"
                                 j = j.lower() #from Stay -> stay
@@ -429,10 +429,9 @@ class Parse:
 
                 #for case: 10.6 precent
                 if(wordToken == "precent" or wordToken == "precentage"):
-                    wordTokenPlace=listOfTokens.index(j)
-                    if(wordTokenPlace != 0):
-                        listOfTokens[wordTokenPlace-1] += "%"
-                        listOfTokens.remove(wordToken)
+                    if(wordIndex != 0):
+                        listOfTokens[wordIndex-1] += "%"
+                        listOfTokens.pop[wordIndex]
 
                 #for case: 123 Thousand
                 if(wordToken == "Thousand" or wordToken == "thousand" or wordToken == "Thousands" or wordToken == "thousands"):
@@ -550,25 +549,11 @@ class Parse:
                             wordIndex += 1
                             listOfTokens.insert(wordIndex,year)
                             wordToken = year
-            else:
-                listOfTokens.pop(wordIndex)
-
-        '''
-        #ENTITY RECOGNIZE - because its without '.' if before and after the point there is a entity name it will saved as one
-        nlp = spacy.load("en_core_web_sm")
-        entityDict = {}
-        entityRecognize = nlp(text)
-        for entity in entityRecognize.ents:
-            eIndex = listOfTokens.index(str(entity))
-            entityList = entity.split(' ')
-            listOfTokens.insert(eIndex, entity)
-            entityDict[entity] = eIndex
-            if(len(entityList) > 1):
-                for i in range(1,len(entityList)):
-                    listOfTokens.remove(eIndex+i)
-        '''
 
 
+
+        while '' in listOfTokens:
+            listOfTokens.remove('')
         return listOfTokens
 
 

@@ -63,8 +63,8 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
         print("elapsed time %s" % (endParse - startParse))
         print ("Tw Num %s" % (number_of_documents))
         #if(len(listOfDoc) / idx % 10 == 0 ):
-
             #indexer.postingDictNames.insert(0, "posting%s" % int(len(listOfDoc) / idx % 10 == 0))
+
     print('Finished parsing and indexing. Starting to export files')
 
 
