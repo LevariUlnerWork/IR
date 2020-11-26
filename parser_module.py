@@ -101,7 +101,7 @@ class Parse:
         #fix - 132,000+
         #fix - "𝑩𝒓𝒆𝒂𝒌𝒊𝒏𝒈: 𝑯𝒖𝒔𝒉𝒑𝒖𝒑𝒑𝒊 𝒉𝒂𝒔 𝒕𝒆𝒔𝒕𝒆𝒅 𝒑𝒐𝒔𝒊𝒕𝒊𝒗𝒆 𝒇𝒐𝒓 𝑪𝒐𝒗𝒊𝒅-19 𝒊𝒏 𝒑𝒓𝒊𝒔𝒐𝒏."
 
-        #isit = self.parse_sentence("") #to check ourselves texts
+        #isit = self.parse_sentence("@IngrahamAngle @NBA Coronavirus injected into cats  University of Wisconsin injects cats with #COVID19   #COVID19 infected cats then donated to animal shelters  families adopt #coronavirus infected cats cats then spread #coronavirus to children  https://t.co/PJupoJ8NXL") #to check ourselves texts
         #TODO: delete terms: '/-', "\'","\"
 
 
@@ -158,7 +158,7 @@ class Parse:
         index= 0
         for term in tokenized_text: #termDict:{key=term:[[indexes],freq]
 
-            if(term == "t.co" or "http"): #think about more words
+            if(term == "t.co" or term == "https"): #think about more words
                 continue
 
             if term not in term_dict.keys():
@@ -342,7 +342,7 @@ class Parse:
     def tokenize_words(text):
         listOfTokens = Parse.punctuation(text)
 
-        for wordIndex in range(0,listOfTokens):
+        for wordIndex in range(0,len(listOfTokens)):
 
             wordToken= listOfTokens[wordIndex]
 
@@ -485,7 +485,7 @@ class Parse:
                     else:
                         listOfTokens[billionIndex] = "1B"
 
-
+        #wordIndex=0
                 # for case: Numbers
                 if (Parse.isfloat(wordToken.replace('.', '', 1)) and wordToken[0] != 'i' and wordToken[0] != 'I'): # if the word is like "inf" or "infinity" it would false positivily think it is a number
                     wordTokenNumber = float(wordToken)
@@ -509,7 +509,7 @@ class Parse:
                     if (numberOfLoops == 3):
                         varInt = "B"
 
-                    listOfTokens[listOfTokens.index(wordToken)] = "%.3f" % round(wordTokenNumber, 3) + varInt
+                    listOfTokens[wordIndex] = "%.3f" % round(wordTokenNumber, 3) + varInt
 
                 #for case: 6 3/4 and date
                 if("/" in wordToken):
