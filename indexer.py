@@ -79,7 +79,8 @@ class Indexer:
                     #update inv_dict:
                     self.inverted_idx[type][term][0] += 1 # add another doc to the count in the inv_dict
                     self.inverted_idx[type][term][1] += document_dictionary[term][1]
-
+                if term not in self.postingDicts[type].keys():
+                    self.postingDicts[type][term] = []
                 self.postingDicts[type][term].append([document_dictionary[term][1], docID, document_dictionary[term][0]])
 
                 if document_dictionary[term][1] == 1:

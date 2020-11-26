@@ -88,7 +88,10 @@ def load_index():
 def search_and_rank_query(query, inverted_index, k, stemming=True):
     p = Parse()
     query_as_list = p.parse_sentence(query)
-    searcher = Searcher(inverted_index)
+    thisStemmer = None
+    if(stemming == True):
+        thisStemmer = stemmer.Stemmer(inverted_index)
+    searcher = Searcher(inverted_index, thisStemmer)
     relevant_docs = searcher.relevant_docs_from_posting(query_as_list)
     ranked_docs = searcher.ranker.rank_relevant_doc(relevant_docs)
     return searcher.ranker.retrieve_top_k(ranked_docs, k)
@@ -96,6 +99,7 @@ def search_and_rank_query(query, inverted_index, k, stemming=True):
 
 def main(corpus_path = "",output_path = "",stemming=True,queries = ["What to do"],num_docs_to_retrieve = 0):
     run_engine(corpus_path = "",output_path = "",stemming=True)
+
     #query = input("Please enter a query: ")
     if(type(queries) == str):
         try: #If there is a file of queries
@@ -116,7 +120,7 @@ def main(corpus_path = "",output_path = "",stemming=True,queries = ["What to do"
                 query = query[2:]
             print('\n' + 'Query: ' + query)
             print('results:' + '\n')
-            for doc_tuple in search_and_rank_query(query, inverted_index, k):
+            for doc_tuple in search_and_rank_query(query, inverted_index, k, stemming):
                 print('tweet id: {}, score (unique common words with query): {}'.format(doc_tuple[0], doc_tuple[1]))
     except:
         print("Please enter queries first")
