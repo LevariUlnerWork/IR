@@ -1,4 +1,5 @@
 import time
+import numpy as np
 from reader import ReadFile
 import stemmer
 from configuration import ConfigClass
@@ -47,6 +48,11 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
     readTime = endRead - startRead
     print("elapsed time %s" % readTime)
 
+    beforeStopPoints = np.linspace(int(len(documents_list)/10), len(documents_list),10)  # set the parts of the file, each number in this list is endpoint of 10% of the whole tweets
+    stopPoints = []
+    for point in beforeStopPoints:
+        stopPoints.append(int(point))
+
 
     # Iterate over every document in the file
     for idx, document in enumerate(documents_list):
@@ -62,14 +68,13 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
         endParse = time.time()
         print("elapsed time %s" % (endParse - startParse))
         print ("Tw Num %s" % (number_of_documents))
-        #if(len(listOfDoc) / idx % 10 == 0 ):
-            #indexer.postingDictNames.insert(0, "posting%s" % int(len(listOfDoc) / idx % 10 == 0))
+        if(idx in stopPoints):
+            indexer.savePostingFile()
 
     print('Finished parsing and indexing. Starting to export files')
 
-
     utils.save_obj(indexer.inverted_idx, "inverted_idx")
-    #Delete this!
+
 
     #TODO: disable the option above and save posting files by 50,000 terms.
 
@@ -80,7 +85,7 @@ def load_index():
     return inverted_index
 
 
-def search_and_rank_query(query, inverted_index, k):
+def search_and_rank_query(query, inverted_index, k, stemming=True):
     p = Parse()
     query_as_list = p.parse_sentence(query)
     searcher = Searcher(inverted_index)

@@ -1,4 +1,4 @@
-import heapq #TODO: Change to priority queue
+import utils
 from queue import PriorityQueue
 class Indexer:
 
@@ -19,7 +19,7 @@ class Indexer:
 
         self.term_max_freq = {}  # (key - DocId): [[maxterms], freq, [single terms]]
 
-        self.postingDictNames = ["postingNums0","postingStrs0","postingEnts0","postingOthers0"] #Names of posting files
+        self.postingDictNames = ["postingNums0","postingOthers0", "postingEnts0", "postingStrs0"] #Names of posting files
         self.currentFileNumber = 0  # which number of file we are
 
 
@@ -72,7 +72,7 @@ class Indexer:
 
                 # Update the public inverted index and termMax
                 if term not in self.inverted_idx[type].keys():
-                    self.postingDicts[type][term] = PriorityQueue()
+                    self.postingDicts[type][term] = []
                     self.inverted_idx[type][term] = [1, document_dictionary[term][1], self.postingDictNames[type]] #TODO: Change the self.postingDict to the name of the posting file
 
                 else:
@@ -80,7 +80,7 @@ class Indexer:
                     self.inverted_idx[type][term][0] += 1 # add another doc to the count in the inv_dict
                     self.inverted_idx[type][term][1] += document_dictionary[term][1]
 
-                self.postingDicts[type][term].put(document_dictionary[term][1], docID, document_dictionary[term][0])
+                self.postingDicts[type][term].append([document_dictionary[term][1], docID, document_dictionary[term][0]])
 
                 if document_dictionary[term][1] == 1:
                     listOfUniques.append(term)
@@ -88,32 +88,29 @@ class Indexer:
 
 
             except:
-                print('problem with the following key {}'.format(term[0]))
+                print('problem with the following key {}'.format(term))
 
 
         #update: term_max_freq dictiontary
         maxTerms = freq_terms[max(freq_terms.keys())]
         self.term_max_freq[docID] = [maxTerms, max(freq_terms.keys()), listOfUniques]
 
-        ''''        
-        maxFreq = max(freq_terms.values())
-        maxTerms = []
-        for i in freq_terms.keys():
-            if(freq_terms[i] == maxFreq):
-                maxTerms.append(i)
-        self.term_max_freq[docID] = [maxTerms,maxFreq,listOfUniques]
-        '''
 
+    def ChangeNames(self):
+        self.currentFileNumber += 1
+        for type in range(3):
+            self.postingDictNames[type] = self.postingDictNames[type][:len(self.postingDictNames[type]) - 1] + str(self.currentFileNumber)
 
     def savePostingFile(self):
         """
         This function is made to order the indexer to output the posting files
         """
         #To save the posting_dict as a file:
-        # utils.save_obj(self.postingDicts, self.postingDictNames[0] )
-
         self.currentFileNumber += 1
-        self.postingDictNames.insert(0, "posting%s" % (self.currentFileNumber))
+        for type in range (4):
+            utils.save_obj(self.postingDicts[type], self.postingDictNames[type] ) # Saves any posting file
+            self.postingDictNames[type] = self.postingDictNames[type][:len(self.postingDictNames[type])-1] + str(self.currentFileNumber) # Creates new names
+            self.postingDicts[type] = {}
 
 
     def isfloat(value):
