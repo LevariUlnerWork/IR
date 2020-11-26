@@ -15,6 +15,7 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
 
     :return:
     """
+    startTimer = time.time()
     number_of_documents = 0
     stemmerLocal = None
     config = ConfigClass()
@@ -72,6 +73,7 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
             indexer.savePostingFile()
 
     print('Finished parsing and indexing. Starting to export files')
+    print ('Time to run: %s' % (startTimer - time.time()))
 
     utils.save_obj(indexer.inverted_idx, "inverted_idx")
 
@@ -90,14 +92,14 @@ def search_and_rank_query(query, inverted_index, k, stemming=True):
     query_as_list = p.parse_sentence(query)
     thisStemmer = None
     if(stemming == True):
-        thisStemmer = stemmer.Stemmer(inverted_index)
+        thisStemmer = stemmer.Stemmer(inv_dict=inverted_index)
     searcher = Searcher(inverted_index, thisStemmer)
     relevant_docs = searcher.relevant_docs_from_posting(query_as_list)
     ranked_docs = searcher.ranker.rank_relevant_doc(relevant_docs)
     return searcher.ranker.retrieve_top_k(ranked_docs, k)
 
 
-def main(corpus_path = "",output_path = "",stemming=True,queries = ["What to do"],num_docs_to_retrieve = 0):
+def main(corpus_path = "",output_path = "",stemming=True,queries = ["1. What to do"],num_docs_to_retrieve = 0):
     run_engine(corpus_path = "",output_path = "",stemming=True)
 
     #query = input("Please enter a query: ")
