@@ -25,6 +25,8 @@ class Stemmer:
             else:
                 type = 3
             wordInx = listStem.index(word)
+
+            '''
             if len(word) > 1 and word[0].isupper() and ' ' not in word:# Change the words to Lower case or Upper Case, exclude Ishuts
                 # for case: Max -> max
                 if (word.lower() in self.inv_dict[type].keys()):
@@ -34,6 +36,8 @@ class Stemmer:
                 else:
                     word = word.upper()
                     listStem[wordInx] = word
+                    
+            '''
         return listStem
 
 

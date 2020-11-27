@@ -34,6 +34,21 @@ class Parse:
         if(self.stemmering != None):
             text_tokens_without_stopwords = self.stemmering.stem_list(text_tokens_without_stopwords)
 
+        #capital and lower letters
+        for word in text_tokens_without_stopwords:
+            wordInx = text_tokens_without_stopwords.index(word)
+            if len(word) > 1 and word[0].isupper() and ' ' not in word and '-' not in word:
+                # for case: Max -> max
+                if (word.lower() in self.indexer.inverted_idx.keys()):
+                    word = word.lower()
+                    text_tokens_without_stopwords[wordInx] = word
+                    #listStem[wordInx] = self.stemmer.stem(word)
+                # for case: Max -> MAX
+                else:
+                    word = word.upper()
+                    text_tokens_without_stopwords[wordInx] = word
+
+
         #EntityRecognition:
         text = text.encode("ascii", "ignore").decode()  # delete all illegal characters like emojis
         text_before_parse = text.split(' ')
@@ -188,6 +203,7 @@ class Parse:
         text = text.replace('\t', ' ')
         text = text.replace("//", ' ')
         text = text.replace("\'", "'")
+
         listWithoutPunc = text.split(' ')
 
 
@@ -227,6 +243,19 @@ class Parse:
                              "y'all": "you all","y'all'd": "you all would","y'all'd've": "you all would have","y'all're": "you all are",
                              "y'all've": "you all have","you'd": "you had / you would","you'd've": "you would have","you'll": "you shall / you will",
                              "you'll've": "you shall have / you will have","you're": "you are","you've": "you have"}
+            '''
+            wordTry = word.lower()
+            bb = wordTry.replace("'", "")
+            for key, val in shortcutDict.items():
+                keynormal = key.replace('\'','')
+                if(keynormal == wordTry):
+                    rr = "gggggg"
+            #yy = type(dictKeys)
+            #bb = dictKeys[0][0].replace('\'','')
+            #gg = dictKeys[-11]
+            #print(gg)
+            #[shortcutDict.index("you all")]
+            '''
 
             if word.lower() in shortcutDict.keys():
                 listWithoutPunc.pop(numIndex)
@@ -264,7 +293,7 @@ class Parse:
             word = realWord
             word = word.encode("ascii", "ignore").decode()  # delete all illegal characters like emojis --------AGAIN?
             listWithoutPunc[numIndex] = word
-            if(('.' in word or ',' in word or '/' in word or '-' in word)):
+            if('.' in word or ',' in word or '/' in word or '-' in word):
                 if (word == ',' or word == '.' or word == '/' or word == '-'):
                     listWithoutPunc.pop(numIndex)
                     continue
