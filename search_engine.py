@@ -70,11 +70,11 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
             endParse = time.time()
             print("elapsed time %s" % (endParse - startParse))
             print("Tw Num %s" % (number_of_documents))
-            if (idx in stopPoints):
+            if (number_of_documents in stopPoints):
                 indexer.savePostingFile()
 
     print('Finished parsing and indexing. Starting to export files')
-    if(idx not in stopPoints):
+    if(number_of_documents not in stopPoints):
         indexer.savePostingFile()
     utils.save_obj(indexer.inverted_idx, "inverted_idx")
     print ('Time to run: %s' % (startTimer - time.time()))
