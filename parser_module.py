@@ -98,7 +98,7 @@ class Parse:
         retweet_quoted_indices = doc_as_list[13]
         term_dict = {}
 
-        #isit = self.parse_sentence("https://www.wltx.com/article/news/health/coronavirus/blood-type-covid-19/285-5232e658-485a-4930-8da1-ca59096765cc?utm_campaign=snd-autopilot") #to check ourselves texts
+        #isit = self.parse_sentence("Just a reminder that when Shakespeare was quarantined because of the plague, he was really scared every single day and had trouble sleeping.") #to check ourselves texts
         #TODO: delete terms: '/-', "\'","\" , 132,000+, "𝑩𝒓𝒆𝒂𝒌𝒊𝒏𝒈: 𝑯𝒖𝒔𝒉𝒑𝒖𝒑𝒑𝒊 𝒉𝒂𝒔 𝒕𝒆𝒔𝒕𝒆𝒅 𝒑𝒐𝒔𝒊𝒕𝒊𝒗𝒆 𝒇𝒐𝒓 𝑪𝒐𝒗𝒊𝒅-19 𝒊𝒏 𝒑𝒓𝒊𝒔𝒐𝒏."
 
 

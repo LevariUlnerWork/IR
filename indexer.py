@@ -19,7 +19,7 @@ class Indexer:
 
         self.term_max_freq = {}  # (key - DocId): [[maxterms], freq, [single terms]]
 
-        self.postingDictNames = ["postingNums0","postingOthers0", "postingEnts0", "postingStrs0"] #Names of posting files
+        self.postingDictNames = ["postingNums0","postingOthr0", "postingEnts0", "postingStrs0"] #Names of posting files
         self.currentFileNumber = 0  # which number of file we are
 
 
@@ -110,7 +110,7 @@ class Indexer:
         self.currentFileNumber += 1
         for type in range (4):
             utils.save_obj(self.postingDicts[type], self.postingDictNames[type] ) # Saves any posting file
-            self.postingDictNames[type] = self.postingDictNames[type][:len(self.postingDictNames[type])-1] + str(self.currentFileNumber) # Creates new names
+            self.postingDictNames[type] = self.postingDictNames[type][:12] + str(self.currentFileNumber) # Creates new names
             self.postingDicts[type] = {}
 
 

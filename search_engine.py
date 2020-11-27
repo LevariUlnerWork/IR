@@ -38,44 +38,48 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
                 continue
             listOfDoc += [folder + "/" + file]
 
-    i = 2 #first file index
+    i = 0 #first file index
     documents_list = [] #The list of tweets
     #Read all files:
-    startRead = time.time()
-    while i < 3: #Real is : while i < len(os.listdir(config.get__corpusPath())):
-        documents_list += r.read_file(file_name=listOfDoc[i])
-        i += 1
-    endRead = time.time()
-    readTime = endRead - startRead
-    print("elapsed time %s" % readTime)
 
-    beforeStopPoints = np.linspace(int(len(documents_list)/10), len(documents_list),10)  # set the parts of the file, each number in this list is endpoint of 10% of the whole tweets
+    beforeStopPoints = np.linspace(500000, 10000000, 20)  # set the parts of the file, each number in this list is endpoint of 10% of the whole tweets
     stopPoints = []
     for point in beforeStopPoints:
         stopPoints.append(int(point))
 
 
-    # Iterate over every document in the file
-    for idx, document in enumerate(documents_list):
+    while i < len(listOfDoc): #Real is : while i < len(os.listdir(config.get__corpusPath())):
+        startRead = time.time()
+        documents_list = r.read_file(file_name=listOfDoc[i])
+        i += 1
+        endRead = time.time()
+        readTime = endRead - startRead
+        print("Read time: %s" % readTime)
 
-        startParse = time.time()
-        # parse the document
-        parsed_document = p.parse_doc(document)
-        number_of_documents += 1
-        # index the document data
-        pdl = len(parsed_document.term_doc_dictionary.keys()) #term_dict length
-        if(pdl > 0):
-            indexer.add_new_doc(parsed_document)
-        endParse = time.time()
-        print("elapsed time %s" % (endParse - startParse))
-        print ("Tw Num %s" % (number_of_documents))
-        if(idx in stopPoints):
-            indexer.savePostingFile()
+        # Iterate over every document in the file
+        for idx, document in enumerate(documents_list):
+
+            startParse = time.time()
+            # parse the document
+            parsed_document = p.parse_doc(document)
+            number_of_documents += 1
+            # index the document data
+            pdl = len(parsed_document.term_doc_dictionary.keys())  # term_dict length
+            if (pdl > 0):
+                indexer.add_new_doc(parsed_document)
+            endParse = time.time()
+            print("elapsed time %s" % (endParse - startParse))
+            print("Tw Num %s" % (number_of_documents))
+            if (idx in stopPoints):
+                indexer.savePostingFile()
 
     print('Finished parsing and indexing. Starting to export files')
+    if(idx not in stopPoints):
+        indexer.savePostingFile()
+    utils.save_obj(indexer.inverted_idx, "inverted_idx")
     print ('Time to run: %s' % (startTimer - time.time()))
 
-    utils.save_obj(indexer.inverted_idx, "inverted_idx")
+
 
 
     #TODO: disable the option above and save posting files by 50,000 terms.
