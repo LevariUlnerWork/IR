@@ -20,7 +20,7 @@ class Stemmer:
                 type = 0
             elif (len(word) == 1):
                 type = 1
-            elif ('_' in word):
+            elif (' ' in word):
                 type = 2
             else:
                 type = 3
