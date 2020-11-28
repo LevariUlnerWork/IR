@@ -22,7 +22,7 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
     r = ReadFile(corpus_path=config.get__corpusPath())
     indexer = Indexer(config)
     if(stemming == True):
-        stemmerLocal = stemmer.Stemmer(indexer)
+        stemmerLocal = stemmer.Stemmer()
     p = Parse(stemmerLocal, indexer)  # Changed by Lev
 
 
