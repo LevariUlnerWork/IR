@@ -35,14 +35,13 @@ class Parse:
             text_tokens_without_stopwords = self.stemmering.stem_list(text_tokens_without_stopwords)
 
         #capital and lower letters
-        for word in text_tokens_without_stopwords:
-            wordInx = text_tokens_without_stopwords.index(word)
+        for wordInx in range(len(text_tokens_without_stopwords)):
+            word = text_tokens_without_stopwords[wordInx]
             if len(word) > 1 and word[0].isupper() and ' ' not in word and '-' not in word:
                 # for case: Max -> max
-                if (word.lower() in self.indexer.inverted_idx.keys()):
+                if (word.lower() in self.indexer.inverted_idx[3].keys()):
                     word = word.lower()
                     text_tokens_without_stopwords[wordInx] = word
-                    #listStem[wordInx] = self.stemmer.stem(word)
                 # for case: Max -> MAX
                 else:
                     word = word.upper()
@@ -201,8 +200,10 @@ class Parse:
         text = text.replace('}', ' ')
         text = text.replace('\n', ' ')
         text = text.replace('\t', ' ')
-        text = text.replace("//", ' ')
+        text = text.replace("//", ' ’')
         text = text.replace("\'", "'")
+        text = text.replace("’", "'")
+
 
         listWithoutPunc = text.split(' ')
 
@@ -243,19 +244,6 @@ class Parse:
                              "y'all": "you all","y'all'd": "you all would","y'all'd've": "you all would have","y'all're": "you all are",
                              "y'all've": "you all have","you'd": "you had / you would","you'd've": "you would have","you'll": "you shall / you will",
                              "you'll've": "you shall have / you will have","you're": "you are","you've": "you have"}
-            '''
-            wordTry = word.lower()
-            bb = wordTry.replace("'", "")
-            for key, val in shortcutDict.items():
-                keynormal = key.replace('\'','')
-                if(keynormal == wordTry):
-                    rr = "gggggg"
-            #yy = type(dictKeys)
-            #bb = dictKeys[0][0].replace('\'','')
-            #gg = dictKeys[-11]
-            #print(gg)
-            #[shortcutDict.index("you all")]
-            '''
 
             if word.lower() in shortcutDict.keys():
                 listWithoutPunc.pop(numIndex)
