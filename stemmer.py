@@ -13,7 +13,8 @@ class Stemmer:
         """
         for wordInx in range(len(listStem)):
             word = listStem[wordInx]
-            listStem[wordInx] = self.stemmer.stem(word)
+            if word.upper() != word:
+                listStem[wordInx] = self.stemmer.stem(word)
         return listStem
 
 

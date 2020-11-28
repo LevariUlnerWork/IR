@@ -31,8 +31,7 @@ class Parse:
         #    text_tokens_without_stopwords = [w.lower() for w in text_tokens]
         #else:
         text_tokens_without_stopwords = [w for w in text_tokens if w not in self.stop_words]
-        if(self.stemmering != None):
-            text_tokens_without_stopwords = self.stemmering.stem_list(text_tokens_without_stopwords)
+
 
         #capital and lower letters
         for wordInx in range(len(text_tokens_without_stopwords)):
@@ -47,6 +46,8 @@ class Parse:
                     word = word.upper()
                     text_tokens_without_stopwords[wordInx] = word
 
+        if (self.stemmering != None):
+            text_tokens_without_stopwords = self.stemmering.stem_list(text_tokens_without_stopwords)
 
         #EntityRecognition:
         text = text.encode("ascii", "ignore").decode()  # delete all illegal characters like emojis
@@ -112,7 +113,7 @@ class Parse:
         retweet_quoted_indices = doc_as_list[13]
         term_dict = {}
 
-        #isit = self.parse_sentence("Just a reminder that when Shakespeare was quarantined because of the plague, he was really scared every single day and had trouble sleeping.") #to check ourselves texts
+        #isit = self.parse_sentence("y'all") #to check ourselves texts
         #TODO: delete terms: '/-', "\'","\" , 132,000+, "𝑩𝒓𝒆𝒂𝒌𝒊𝒏𝒈: 𝑯𝒖𝒔𝒉𝒑𝒖𝒑𝒑𝒊 𝒉𝒂𝒔 𝒕𝒆𝒔𝒕𝒆𝒅 𝒑𝒐𝒔𝒊𝒕𝒊𝒗𝒆 𝒇𝒐𝒓 𝑪𝒐𝒗𝒊𝒅-19 𝒊𝒏 𝒑𝒓𝒊𝒔𝒐𝒏."
 
 
@@ -191,7 +192,7 @@ class Parse:
         text = text.replace('&', ' ')
         text = text.replace(';', ' ')
         text = text.replace(':', ' ')
-        #text = text.replace("'", ' ')
+        text = text.replace('"', ' ')
         text = text.replace('(', ' ')
         text = text.replace(')', ' ')
         text = text.replace('[', ' ')
@@ -200,7 +201,7 @@ class Parse:
         text = text.replace('}', ' ')
         text = text.replace('\n', ' ')
         text = text.replace('\t', ' ')
-        text = text.replace("//", ' ’')
+        text = text.replace("//", '')
         text = text.replace("\'", "'")
         text = text.replace("’", "'")
 
