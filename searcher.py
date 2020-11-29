@@ -23,11 +23,13 @@ class Searcher:
         postingLoadedNames = [] #Names of posting file which we already loaded.
         posting = []
 
-        relevant_docs = {}
+        relevant_docs = {} #{docID: score, {terms in query:num}}
+
         if (self.stemmer != None):
             query = self.stemmer.stem_list(query)
         for term in query:
             termIndex = query.index(term)
+
             try:  # an example of checks that you have to do
                 # Update the local dicts: freq of the term in this doc:
 
@@ -54,12 +56,12 @@ class Searcher:
                 for doc_tuple in posting_doc:
                     doc = doc_tuple[1]
                     if doc not in relevant_docs.keys():
-                        relevant_docs[doc] = [1, [term]] #we can delete the number
+                        relevant_docs[doc] = [1, {term:1}] #we can delete the number
                     else:
-                        if query[termIndex-1] in relevant_docs[doc][2] or term in relevant_docs[doc][1]: #its a term
-                            relevant_docs[doc][0] += 1
+                        if query[termIndex-1] in relevant_docs[doc][1]: #its a term
+                            relevant_docs[doc][0] += 1 #bonous
                         relevant_docs[doc][0] += 1
-                        relevant_docs[doc][1].append(term)
+                        relevant_docs[doc][1][term] += 1
             except:
                 print('term {} not found in posting'.format(term))
         return relevant_docs

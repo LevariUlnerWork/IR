@@ -29,13 +29,18 @@ class Ranker:
                 self.tf_idf_dict[term] = tf * idf
 
             docRank = 0
-            numTermsInQuery = doc_tuple[1]
+            termsInQuery = doc_tuple[1]
+
+            scoreQuery = 0
+            for term in termsInQuery:
+                scoreQuery += pow(termsInQuery[term], 2)
+
             for term, num in self.tf_idf_dict.items():
-                if term in doc_tuple[2]:
-                    docRank += num
+                if term in termsInQuery:
+                    docRank += num*(termsInQuery[term])
                 sum += pow(num, 2)
 
-            denominator = math.sqrt(sum) * math.sqrt(numTermsInQuery)
+            denominator = math.sqrt(sum) * math.sqrt(scoreQuery)
 
             self.docRanker[docID] = docRank / denominator
 
