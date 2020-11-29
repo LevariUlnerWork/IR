@@ -134,7 +134,6 @@ class Indexer:
         self.term_max_freq[docID] = [maxTerms, max(freq_terms.keys()), listOfUniques]
 
 
-
     def savePostingFile(self):
         """
         This function is made to order the indexer to output the posting files
@@ -155,6 +154,8 @@ class Indexer:
             utils.save_obj(self.postingDicts[type][letter], self.postingDictNames[type][letter])  # Saves any posting file
             self.postingDictNames[type][letter] = self.postingDictNames[type][letter][:14] + str(self.currentFileNumber)  # Creates new names
             self.postingDicts[type][letter] = {}
+
+
     def isfloat(value):
         if(value[0] == 'i' or value[0] == 'I'):
             return False
