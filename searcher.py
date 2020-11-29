@@ -56,7 +56,7 @@ class Searcher:
                     if doc not in relevant_docs.keys():
                         relevant_docs[doc] = [1, [term]] #we can delete the number
                     else:
-                        if query[termIndex-1] in relevant_docs[doc][2]: #its a term
+                        if query[termIndex-1] in relevant_docs[doc][2] or term in relevant_docs[doc][1]: #its a term
                             relevant_docs[doc][0] += 1
                         relevant_docs[doc][0] += 1
                         relevant_docs[doc][1].append(term)
