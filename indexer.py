@@ -24,7 +24,7 @@ class Indexer:
         for letter in string.ascii_lowercase:
             postingStrsNames.append("postingStrs_" + letter + "0")
         for letter in string.ascii_uppercase:
-            postingStrsNames.append("postingStrs_" + letter + "0")
+            postingStrsNames.append("postingStrs_C" + letter + "0")
 
         self.postingDictNames = ["postingNums","postingOthr", "postingEnts", postingStrsNames] #Names of posting files
         self.currentFileNumber = 0  # which number of file we are
@@ -147,9 +147,13 @@ class Indexer:
             self.postingDicts[type] = {}
 
         type=3
-        for letter in range(52):
+        for letter in range(26):
             utils.save_obj(self.postingDicts[type][letter], self.postingDictNames[type][letter])  # Saves any posting file
             self.postingDictNames[type][letter] = self.postingDictNames[type][letter][:13] + str(self.currentFileNumber)  # Creates new names
+            self.postingDicts[type][letter] = {}
+        for letter in range(26,52):
+            utils.save_obj(self.postingDicts[type][letter], self.postingDictNames[type][letter])  # Saves any posting file
+            self.postingDictNames[type][letter] = self.postingDictNames[type][letter][:14] + str(self.currentFileNumber)  # Creates new names
             self.postingDicts[type][letter] = {}
     def isfloat(value):
         if(value[0] == 'i' or value[0] == 'I'):
