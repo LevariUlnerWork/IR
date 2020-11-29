@@ -111,7 +111,7 @@ class Indexer:
 
                         if term not in self.postingDicts[type][letterIndex].keys():
                             self.postingDicts[type][letterIndex][term] = []
-                            self.inverted_idx[type][letterIndex][term][2].append(self.postingDictNames[type][letterIndex])
+                            self.inverted_idx[type][term][2].append(self.postingDictNames[type][letterIndex])
                         self.postingDicts[type][letterIndex][term].append([document_dictionary[term][1], docID, document_dictionary[term][0]])
                     else:
                         if term not in self.postingDicts[type].keys():

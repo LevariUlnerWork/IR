@@ -57,7 +57,7 @@ class Parse:
             word = text_before_parse[index_word]
             if(index_word < real_index_word): #is there index that smaller than 0
                 continue
-            if(len(word) > 1 and (word[0].isupper() or '-' in word) and ('.' not in word and  ',' not in word and '?' not in word and '!' not in word and ':' not in word)): #for Max Rossenfield
+            if(len(word) > 1 and (word[0].isupper() or '-' in word or '_' in word) and ('.' not in word and  ',' not in word and '?' not in word and '!' not in word and ':' not in word)): #for Max Rossenfield
                 next_index = index_word + 1
                 while (next_index < len(text_before_parse) and len(text_before_parse[next_index]) > 1 and text_before_parse[next_index][0].isupper()):
                     stopHere = False
@@ -202,6 +202,7 @@ class Parse:
         text = text.replace('\n', ' ')
         text = text.replace('\t', ' ')
         text = text.replace("//", '')
+        text = text.replace("_", " ")
         text = text.replace("\'", "'")
         text = text.replace("’", "'")
 
