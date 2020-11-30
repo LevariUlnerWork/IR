@@ -2,25 +2,25 @@ import math
 
 class Ranker:
     def __init__(self):
-        self.docRanker = []  # dict of COSIM for each doc
+        pass
 
-        #pass
 
     @staticmethod
-    def rank_relevant_doc(self, relevant_doc):
+    def rank_relevant_doc(relevant_doc):
         """
         This function provides rank for each relevant document and sorts them by their scores.
         The current score considers solely the number of terms shared by the tweet (full_text) and query.
         :param relevant_doc: dictionary of documents that contains at least one term from the query.
         :return: sorted list of documents by score
         """
+        docRanker = []  # List of COSIM for each doc
         for docID in relevant_doc.keys():
 
             enumerate = sum(relevant_doc[docID][0].values())
             denominator = math.sqrt(sum([math.pow(x,2) for x in relevant_doc[docID][0].values()]))
-            self.docRanker.append( ((enumerate/denominator)+relevant_doc[docID][1], docID) ) # tuple: (cosSim,docID)
+            docRanker.append( ((enumerate/denominator)+relevant_doc[docID][1], docID) ) # tuple: (cosSim,docID)
 
-        return sorted(self.docRanker, reverse=True)
+        return sorted(docRanker, reverse=True)
 
     @staticmethod
     def retrieve_top_k(sorted_relevant_doc, k=1):

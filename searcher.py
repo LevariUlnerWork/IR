@@ -32,8 +32,8 @@ class Searcher:
                 query_dict[term] = 0
             query_dict[term] += 1
 
-        for termIndex in range(query_dict.keys()):
-            term = query_dict.keys()[termIndex]
+        for termIndex in range(len(query_dict.keys())):
+            term = list(query_dict.keys())[termIndex]
 
             try:  # an example of checks that you have to do
                 # Update the local dicts: freq of the term in this doc:
@@ -67,14 +67,14 @@ class Searcher:
                         freq = doc_tuple[0]
                         maxFreqInDoc = self.term_max_freq[docID]
                         tf = freq /  maxFreqInDoc
-                        idf = math.log((len(self.term_max_freq) / self.inverted_index[type][0]), 2)
+                        idf = math.log((len(self.term_max_freq) / self.inverted_index[type][term][0]), 2)
                         numOfDocsPerTerm += 1
                         if docID not in relevant_docs.keys():
                           relevant_docs[docID] = [{term:tf*idf * query_dict[term]},0] #we can delete the number
                         else:
-                            if termIndex > 0 and query[termIndex-1] in relevant_docs[docID][1].keys(): #its a term
+                            if termIndex > 0 and query_dict[list(query_dict.keys())[termIndex-1]] in relevant_docs[docID][0].keys(): #its a term
                                 relevant_docs[docID][1] += 1 #bonous
-                            relevant_docs[docID][1][term] = tf*idf
+                            relevant_docs[docID][0][term] = tf*idf
 
 
             except:
