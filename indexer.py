@@ -18,7 +18,7 @@ class Indexer:
         #self.inverted_idx_strs = {}  # (key - term): [num Of docs, freq in corpus, pointer to posting file]
         '''
 
-        self.term_max_freq = {}  # (key - DocId): [[maxterms], freq, [single terms]]
+        self.term_max_freq = {}  # (key - DocId):  MaxFreq
 
         postingStrsNames = []
         for letter in string.ascii_lowercase:
@@ -55,7 +55,7 @@ class Indexer:
         document_dictionary = document.term_doc_dictionary # document_dictionary = {term:[[indexes],freq]
         freq_terms = {} # {freq:[terms]} # save the freq of the term in this doc
         listOfUniques = [] #list of unique terms
-        self.term_max_freq[docID] = [] #[[] , , []]
+        self.term_max_freq[docID] = 0
         # Go over each term in the doc
         for term in document_dictionary.keys():
             try:
@@ -131,7 +131,8 @@ class Indexer:
 
         #update: term_max_freq dictiontary
         maxTerms = freq_terms[max(freq_terms.keys())]
-        self.term_max_freq[docID] = [maxTerms, max(freq_terms.keys()), listOfUniques]
+        self.term_max_freq[docID] = max(freq_terms.keys())
+        # self.term_max_freq[docID] = [maxTerms, max(freq_terms.keys()), listOfUniques]
 
 
     def savePostingFile(self):

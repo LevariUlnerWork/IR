@@ -78,6 +78,7 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
     if(number_of_documents not in stopPoints):
         indexer.savePostingFile()
     utils.save_obj(indexer.inverted_idx, "inverted_idx")
+    utils.save_obj(indexer.term_max_freq, "term_max_freq")
     print ('Time to run: %s' % (startTimer - time.time()))
 
 
@@ -91,14 +92,18 @@ def load_index():
     inverted_index = utils.load_obj("inverted_idx")
     return inverted_index
 
+def load_max_freq():
+    print('Load term max freq dictionary')
+    inverted_index = utils.load_obj("term_max_freq")
+    return inverted_index
 
-def search_and_rank_query(query, inverted_index, num_docs_to_retrieve, stemming=True):
-    p = Parse()
-    query_as_list = p.parse_sentence(query)
+def search_and_rank_query(query, inverted_index, term_max_freq, num_docs_to_retrieve, stemming=True):
     thisStemmer = None
     if(stemming == True):
         thisStemmer = stemmer.Stemmer()
-    searcher = Searcher(inverted_index, thisStemmer)
+    p = Parse(thisStemmer)
+    query_as_list = p.parse_sentence(query)
+    searcher = Searcher(inverted_index,term_max_freq)
     relevant_docs = searcher.relevant_docs_from_posting(query_as_list)
     ranked_docs = searcher.ranker.rank_relevant_doc(relevant_docs)
     return searcher.ranker.retrieve_top_k(ranked_docs, num_docs_to_retrieve)
@@ -122,6 +127,7 @@ def main(corpus_path = "",output_path = "",stemming=True,queries = ["1. What to 
             print("Number of docs to rertrieve cannot be more than 2000, so it changes to 2000 now")
             num_docs_to_retrieve=2000
         inverted_index = load_index()
+        term_max_freq = load_max_freq()
         for query in queries_list:
             if(query[2] == " "):
                 query = query[3:]
@@ -129,7 +135,7 @@ def main(corpus_path = "",output_path = "",stemming=True,queries = ["1. What to 
                 query = query[2:]
             print('\n' + 'Query: ' + query)
             print('results:' + '\n')
-            for doc_tuple in search_and_rank_query(query, inverted_index, num_docs_to_retrieve, stemming):
-                print('tweet id: {}, score (unique common words with query): {}'.format(doc_tuple[0], doc_tuple[1]))
+            for doc_tuple in search_and_rank_query(query, inverted_index, term_max_freq, num_docs_to_retrieve, stemming):
+                print('tweet id: {}, score (unique common words with query): {}'.format(doc_tuple[1], doc_tuple[0]))
     except:
         print("Please enter queries first")
