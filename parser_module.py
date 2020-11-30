@@ -5,7 +5,7 @@ from document import Document
 
 class Parse:
 
-    def __init__(self, stemming=None, iIndexer=None):
+    def __init__(self, stemming=None, iIndexer=None, invIdx = None):
         #self.stop_words = stopwords.words('english') - we are not use this stop words
         full_path = open('stop-words.txt',"r")
         listOfStopWords = full_path.read()
@@ -13,7 +13,12 @@ class Parse:
         #print(listOfStopWords)
         full_path.close()
         self.stop_words = listOfStopWords.split(" ")
-        self.indexer = iIndexer
+        self.invIdx = None
+        if(iIndexer != None):
+            self.invIdx = iIndexer.inverted_idx
+        elif(invIdx != None):
+            self.invIdx = invIdx
+
         #print(type(self.stop_words))
 
 
@@ -38,7 +43,7 @@ class Parse:
             word = text_tokens_without_stopwords[wordInx]
             if len(word) > 1 and word[0].isupper() and ' ' not in word and '-' not in word:
                 # for case: Max -> max
-                if (word.lower() in self.indexer.inverted_idx[3].keys()):
+                if (word.lower() in self.invIdx[3].keys()):
                     word = word.lower()
                     text_tokens_without_stopwords[wordInx] = word
                 # for case: Max -> MAX

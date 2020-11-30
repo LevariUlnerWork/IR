@@ -23,7 +23,7 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
     indexer = Indexer(config)
     if(stemming == True):
         stemmerLocal = stemmer.Stemmer()
-    p = Parse(stemmerLocal, indexer)  # Changed by Lev
+    p = Parse(stemming=stemmerLocal, iIndexer=indexer)  # Changed by Lev
 
 
     #read all files from all folders:
@@ -103,7 +103,7 @@ def search_and_rank_query(query, inverted_index, term_max_freq, num_docs_to_retr
     thisStemmer = None
     if(stemming == True):
         thisStemmer = stemmer.Stemmer()
-    p = Parse(thisStemmer)
+    p = Parse(stemming=thisStemmer,invIdx=inverted_index)
     query_as_list = p.parse_sentence(query)
     searcher = Searcher(inverted_index,term_max_freq)
     relevant_docs = searcher.relevant_docs_from_posting(query_as_list)
