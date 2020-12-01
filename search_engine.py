@@ -16,7 +16,7 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
 
     :return:
     """
-    # startTimer = time.time()
+    startTimer = time.time()
     number_of_documents = 0
     stemmerLocal = None
     config = ConfigClass()
@@ -52,7 +52,7 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
         stopPoints.append(int(point))
 
 
-    while i < 1:# len(listOfDoc):
+    while i < len(listOfDoc):
         startRead = time.time()
         documents_list = r.read_file(file_name=listOfDoc[i])
         i += 1
@@ -87,10 +87,10 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
     # Delete little entities:
     for entity in list(indexer.inverted_idx[2].keys()):
         if (indexer.inverted_idx[2][entity][0] == 1):
-            posting = indexer.inverted_idx[2][entity][2][0]
-            posting_dict = utils.load_obj(savingPath + posting)
-            posting_dict.pop(entity)
-            utils.save_obj(posting_dict, savingPath + posting)
+            # posting = indexer.inverted_idx[2][entity][2][0]
+            # posting_dict = utils.load_obj(savingPath + posting)
+            # posting_dict.pop(entity)
+            # utils.save_obj(posting_dict, savingPath + posting)
             indexer.inverted_idx[2].pop(entity)
 
     utils.save_obj(indexer.inverted_idx, "inverted_idx")
