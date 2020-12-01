@@ -42,7 +42,7 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
                 continue
             listOfDoc += [folder + "/" + file]
 
-    i = 0 #first file index
+    i = 0    #first file index
     documents_list = [] #The list of tweets
     #Read all files:
 
@@ -52,7 +52,7 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
         stopPoints.append(int(point))
 
 
-    while i < 1:# len(listOfDoc):
+    while i < len(listOfDoc):
         #startRead = time.time()
         documents_list = r.read_file(file_name=listOfDoc[i])
         i += 1
@@ -63,8 +63,8 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
         # Iterate over every document in the file
         for idx, document in enumerate(documents_list):
 
-            if(number_of_documents == 300):
-                break
+            # if(number_of_documents == 300):
+            #     break
             #startParse = time.time()
             # parse the document
             parsed_document = p.parse_doc(document)
@@ -76,8 +76,8 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
             # endParse = time.time()
             # print("elapsed time %s" % (endParse - startParse))
             # print("Tw Num %s" % (number_of_documents))
-            # if (number_of_documents in stopPoints):
-            if (number_of_documents % 100 == 0):
+            if (number_of_documents in stopPoints):
+            # if (number_of_documents % 100 == 0):
                 indexer.savePostingFile(savingPath)
 
     #print('Finished parsing and indexing. Starting to export files')
