@@ -21,10 +21,13 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
     config = ConfigClass()
     r = ReadFile(corpus_path=config.get__corpusPath())
     indexer = Indexer(config)
+    savingPath = output_path + config.saveFilesWithoutStem + "/"
     if(stemming == True):
         stemmerLocal = stemmer.Stemmer()
+        savingPath = output_path + config.saveFilesWithStem + "/"
     p = Parse(stemming=stemmerLocal, iIndexer=indexer)  # Changed by Lev
-
+    if os.path.exists(savingPath) == False:
+        os.makedirs(savingPath)
 
     #read all files from all folders:
     listOfFold = os.listdir(config.get__corpusPath()) #list of folders
@@ -48,7 +51,7 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
         stopPoints.append(int(point))
 
 
-    while i < len(listOfDoc): #Real is : while i < len(os.listdir(config.get__corpusPath())):
+    while i < 1:# len(listOfDoc):
         startRead = time.time()
         documents_list = r.read_file(file_name=listOfDoc[i])
         i += 1
@@ -59,8 +62,8 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
         # Iterate over every document in the file
         for idx, document in enumerate(documents_list):
 
-            # if(number_of_documents == 300):
-            #     break
+            if(number_of_documents == 300):
+                break
             startParse = time.time()
             # parse the document
             parsed_document = p.parse_doc(document)
@@ -72,13 +75,13 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
             endParse = time.time()
             print("elapsed time %s" % (endParse - startParse))
             print("Tw Num %s" % (number_of_documents))
-            if (number_of_documents in stopPoints):
-            #if (number_of_documents % 100 == 0):
-                indexer.savePostingFile()
+            # if (number_of_documents in stopPoints):
+            if (number_of_documents % 100 == 0):
+                indexer.savePostingFile(savingPath)
 
     print('Finished parsing and indexing. Starting to export files')
     if(number_of_documents not in stopPoints):
-        indexer.savePostingFile()
+        indexer.savePostingFile(savingPath)
     utils.save_obj(indexer.inverted_idx, "inverted_idx")
     utils.save_obj(indexer.term_max_freq, "term_max_freq")
     print ('Time to run: %s' % (startTimer - time.time()))
@@ -99,20 +102,28 @@ def load_max_freq():
     inverted_index = utils.load_obj("term_max_freq")
     return inverted_index
 
-def search_and_rank_query(query, inverted_index, term_max_freq, num_docs_to_retrieve, stemming=True):
+def search_and_rank_query(query, inverted_index, term_max_freq, num_docs_to_retrieve, stemming=True, output_path=""):
     thisStemmer = None
+    config = ConfigClass()
+    loadingPath = output_path + config.saveFilesWithoutStem + "/"
     if(stemming == True):
         thisStemmer = stemmer.Stemmer()
+        loadingPath = output_path + config.saveFilesWithStem + "/"
+
     p = Parse(stemming=thisStemmer,invIdx=inverted_index)
     query_as_list = p.parse_sentence(query)
-    searcher = Searcher(inverted_index,term_max_freq)
+    searcher = Searcher(inverted_index,term_max_freq,loadingPath)
     relevant_docs = searcher.relevant_docs_from_posting(query_as_list)
     ranked_docs = searcher.ranker.rank_relevant_doc(relevant_docs)
     return searcher.ranker.retrieve_top_k(ranked_docs, num_docs_to_retrieve)
 
 
-def main(corpus_path = "",output_path = "",stemming=True,queries = ["What to do"],num_docs_to_retrieve = 5):
-    run_engine(corpus_path = "",output_path = "",stemming=True)
+def main(corpus_path = "",output_path = "PostingFiles",stemming=True,queries = ["What to do"],num_docs_to_retrieve = 5):
+    if(os.path.exists(output_path) == False):
+        os.makedirs(output_path)
+
+    run_engine(corpus_path,output_path,stemming)
+
 
     #query = input("Please enter a query: ")
     if(type(queries) == str):
@@ -133,7 +144,7 @@ def main(corpus_path = "",output_path = "",stemming=True,queries = ["What to do"
         for query in queries_list:
             print('\n' + 'Query: ' + query)
             print('results:' + '\n')
-            for doc_tuple in search_and_rank_query(query, inverted_index, term_max_freq, num_docs_to_retrieve, stemming):
+            for doc_tuple in search_and_rank_query(query, inverted_index, term_max_freq, num_docs_to_retrieve, stemming ,output_path):
                 print('tweet id: {}, score (unique common words with query): {}'.format(doc_tuple[1], doc_tuple[0]))
     except:
         print("Please enter queries first")

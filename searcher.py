@@ -6,7 +6,7 @@ import math
 
 class Searcher:
 
-    def __init__(self, inverted_index, term_max_freq):
+    def __init__(self, inverted_index, term_max_freq, loadingPath):
         """
         :param inverted_index: dictionary of inverted index
         """
@@ -14,6 +14,7 @@ class Searcher:
         self.ranker = Ranker()
         self.inverted_index = inverted_index
         self.term_max_freq = term_max_freq
+        self.loadingPath = loadingPath
 
     def relevant_docs_from_posting(self, query):
         """
@@ -58,16 +59,16 @@ class Searcher:
                 for postingName in postingNames:
                     if(postingName not in postingLoadedNames): #its a list so i think its should be one by one ???????????????
                         postingLoadedNames.append(postingName) # Add the name of the new file
-                        newPosting = utils.load_obj(postingName) # load the file
+                        newPosting = utils.load_obj(self.loadingPath + postingName) # load the file
                         posting.append(newPosting) # Add the dictionary to the posting files
                     posting_index = postingLoadedNames.index(postingName)
                     posting_doc = posting[posting_index][term] # load the relevant tweets data per term
                     for doc_tuple in posting_doc:
                         docID = doc_tuple[1]
                         freq = doc_tuple[0]
-                        maxFreqInDoc = self.term_max_freq[docID]
+                        maxFreqInDoc = self.term_max_freq[docID][0]
                         tf = freq /  maxFreqInDoc
-                        idf = math.log((len(self.term_max_freq) / self.inverted_index[type][term][0]), 2)
+                        idf = math.log((len(self.term_max_freq.keys()) / self.inverted_index[type][term][0]), 2)
                         numOfDocsPerTerm += 1
                         if docID not in relevant_docs.keys():
                           relevant_docs[docID] = [{term:tf*idf * query_dict[term]},0] #we can delete the number

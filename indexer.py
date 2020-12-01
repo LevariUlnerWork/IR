@@ -18,7 +18,7 @@ class Indexer:
         #self.inverted_idx_strs = {}  # (key - term): [num Of docs, freq in corpus, pointer to posting file]
         '''
 
-        self.term_max_freq = {}  # (key - DocId):  MaxFreq
+        self.term_max_freq = {}  # (key - DocId):  [MaxFreq, {term:freq}
 
         postingStrsNames = []
         for letter in string.ascii_lowercase:
@@ -55,10 +55,12 @@ class Indexer:
         document_dictionary = document.term_doc_dictionary # document_dictionary = {term:[[indexes],freq]
         freq_terms = {} # {freq:[terms]} # save the freq of the term in this doc
         listOfUniques = [] #list of unique terms
-        self.term_max_freq[docID] = 0
+        self.term_max_freq[docID] = [0,{}]
         # Go over each term in the doc
         for term in document_dictionary.keys():
             try:
+
+                self.term_max_freq[docID][1][term] = document_dictionary[term][1]
 
                 #update the most freqs of one term in the tweet:
                 if document_dictionary[term][1] not in freq_terms:
@@ -131,28 +133,27 @@ class Indexer:
 
         #update: term_max_freq dictiontary
         maxTerms = freq_terms[max(freq_terms.keys())]
-        self.term_max_freq[docID] = max(freq_terms.keys())
-        # self.term_max_freq[docID] = [maxTerms, max(freq_terms.keys()), listOfUniques]
+        self.term_max_freq[docID][0] = max(freq_terms.keys())
 
 
-    def savePostingFile(self):
+    def savePostingFile(self,savingPath):
         """
         This function is made to order the indexer to output the posting files
         """
         #To save the posting_dict as a file:
         self.currentFileNumber += 1
         for type in range (3):
-            utils.save_obj(self.postingDicts[type], self.postingDictNames[type] ) # Saves any posting file
+            utils.save_obj(self.postingDicts[type], savingPath +  self.postingDictNames[type] ) # Saves any posting file
             self.postingDictNames[type] = self.postingDictNames[type][:11] + str(self.currentFileNumber) # Creates new names
             self.postingDicts[type] = {}
 
         type=3
         for letter in range(26):
-            utils.save_obj(self.postingDicts[type][letter], self.postingDictNames[type][letter])  # Saves any posting file
+            utils.save_obj(self.postingDicts[type][letter], savingPath + self.postingDictNames[type][letter])  # Saves any posting file
             self.postingDictNames[type][letter] = self.postingDictNames[type][letter][:13] + str(self.currentFileNumber)  # Creates new names
             self.postingDicts[type][letter] = {}
         for letter in range(26,52):
-            utils.save_obj(self.postingDicts[type][letter], self.postingDictNames[type][letter])  # Saves any posting file
+            utils.save_obj(self.postingDicts[type][letter], savingPath + self.postingDictNames[type][letter])  # Saves any posting file
             self.postingDictNames[type][letter] = self.postingDictNames[type][letter][:14] + str(self.currentFileNumber)  # Creates new names
             self.postingDicts[type][letter] = {}
 
