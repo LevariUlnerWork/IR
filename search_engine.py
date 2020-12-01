@@ -83,6 +83,16 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
     #print('Finished parsing and indexing. Starting to export files')
     if(number_of_documents not in stopPoints):
         indexer.savePostingFile(savingPath)
+
+    # Delete little entities:
+    for entity in list(indexer.inverted_idx[2].keys()):
+        if (indexer.inverted_idx[2][entity][0] == 1):
+            posting = indexer.inverted_idx[2][entity][2][0]
+            posting_dict = utils.load_obj(savingPath + posting)
+            posting_dict.pop(entity)
+            utils.save_obj(posting_dict, posting)
+            indexer.inverted_idx[2].pop(entity)
+
     utils.save_obj(indexer.inverted_idx, "inverted_idx")
     utils.save_obj(indexer.term_max_freq, "term_max_freq")
     #print ('Time to run: %s' % (startTimer - time.time()))
@@ -125,8 +135,8 @@ def main(corpus_path = "",output_path = "PostingFiles",stemming=True,queries = [
 
     run_engine(corpus_path,output_path,stemming)
 
-    #full_path = open('queries.txt',"r")
-    queries_list = [] # full_path.readline()#.split("\n")
+    full_path = open('queries.txt',"r", encoding= 'utf8')
+    queries_list = full_path.read().split("\n")
 
     #create csv file:
     with open("results.csv", 'w', newline='') as csvfile:
@@ -136,8 +146,8 @@ def main(corpus_path = "",output_path = "PostingFiles",stemming=True,queries = [
         #query = input("Please enter a query: ")
         if(type(queries) == str):
             try: #If there is a file of queries
-                full_path = open(queries, "r")
-                queries_list += full_path.read(queries)
+                full_path = open(queries, "r",encoding='utf8')
+                queries_list += full_path.read(queries).split('\n')
             except:#if queries is one line of query
                 queries_list += [queries]
 

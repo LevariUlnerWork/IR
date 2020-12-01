@@ -136,6 +136,7 @@ class Indexer:
         self.term_max_freq[docID][0] = max(freq_terms.keys())
 
 
+
     def savePostingFile(self,savingPath):
         """
         This function is made to order the indexer to output the posting files

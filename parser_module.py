@@ -12,7 +12,7 @@ class Parse:
         self.stemmering = stemming
         #print(listOfStopWords)
         full_path.close()
-        self.stop_words = listOfStopWords.split(" ")
+        self.stop_words = listOfStopWords.split(",")
         self.invIdx = None
         if(iIndexer != None):
             self.invIdx = iIndexer.inverted_idx
@@ -57,12 +57,27 @@ class Parse:
         #EntityRecognition:
         text = text.encode("ascii", "ignore").decode()  # delete all illegal characters like emojis
         text_before_parse = text.split(' ')
-        real_index_word = 0
+        real_index_word = -1
         for index_word in range(len(text_before_parse)):
+            real_index_word += 1
             word = text_before_parse[index_word]
             if(index_word < real_index_word): #is there index that smaller than 0
                 continue
-            if(len(word) > 1 and (word[0].isupper() or '-' in word or '_' in word) and ('.' not in word and  ',' not in word and '?' not in word and '!' not in word and ':' not in word)): #for Max Rossenfield
+            if('"' in word and '"' in text.replace('"','',1)):
+                word=word.replace('"','')
+                next_index = index_word + 1
+                stop = False
+                while(next_index < len(text_before_parse) and stop == False):
+                    next_word = text_before_parse[next_index]
+                    if('"' in next_word):
+                        stop = True
+                        next_word = next_word.replace('"', '')
+                    word += " " + next_word
+                    real_index_word += 1
+                    next_index += 1
+                text_tokens_without_stopwords.insert(index_word, word)
+
+            elif(len(word) > 1 and (word[0].isupper() or '-' in word or '_' in word) and ('.' not in word and  ',' not in word and '?' not in word and '!' not in word and ':' not in word)): #for Max Rossenfield
                 next_index = index_word + 1
                 while (next_index < len(text_before_parse) and len(text_before_parse[next_index]) > 1 and text_before_parse[next_index][0].isupper()):
                     stopHere = False
@@ -72,13 +87,13 @@ class Parse:
                         if('.' in next_word):
                             next_word = next_word.split('.')[0]
                         if(',' in next_word):
-                            next_word = next_word.split('.')[0]
+                            next_word = next_word.split(',')[0]
                         if('?' in next_word):
-                            next_word = next_word.split('.')[0]
+                            next_word = next_word.split('?')[0]
                         if('!' in next_word):
-                            next_word = next_word.split('.')[0]
+                            next_word = next_word.split('!')[0]
                         if (':' in next_word):
-                            next_word = next_word.split('.')[0]
+                            next_word = next_word.split(':')[0]
                     else:
                         next_word = next_word
 
@@ -209,6 +224,7 @@ class Parse:
         text = text.replace("//", '')
         text = text.replace("_", " ")
         text = text.replace("\'", "'")
+        text = text.replace('"', " ")
         text = text.replace("’", "'")
 
 
