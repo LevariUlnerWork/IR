@@ -1,3 +1,4 @@
+import string
 from parser_module import Parse
 from ranker import Ranker
 import utils
@@ -25,13 +26,17 @@ class Searcher:
         postingLoadedNames = [] # Names of posting file which we already loaded.
         posting = [] # List of posting files which were loaded already
 
-        relevant_docs = {} #{docID: [{terms in query:[tfIdfTermInDoc, TfIdfTermInQuery , sumOfAllTfIdfEveryTerm ^2} , bonus_score]}
         query_dict = {}
         for termInd in range(len(query)):
             term = query[termInd]
             if(term not in query_dict.keys()):
                 query_dict[term] = 0
             query_dict[term] += 1
+
+        # TFIDF for the whole terms in in the query:
+        tfIdfAllTermsInQueryPow = self.tfPowForTermQuery(query_dict)
+
+        relevant_docs = [{}, tfIdfAllTermsInQueryPow]  #relevant_docs = [ {docID: [{terms in query:[tfIdfTermInDoc, TfIdfTermInQuery] } sumOfAllTfIdfEveryTermDoc ^2, bonus_score]} , sumOfAllTfIdfEveryTermDoc ^2]
 
         for termIndex in range(len(query_dict.keys())):
             term = list(query_dict.keys())[termIndex]
@@ -40,11 +45,11 @@ class Searcher:
                 # Update the local dicts: freq of the term in this doc:
 
                 type = [0, 1, 2, 3]
-
+                t = term[0]
                 # Deciding the type of the term
                 if (self.isfloat(term) == True):  # numbers
                     type = 0
-                elif (len(term) == 1):  # others
+                elif (term[0] not in string.ascii_lowercase and term[0] not in string.ascii_uppercase):  # others
                     type = 1
                 elif (' ' in term):  # entities
                     type = 2
@@ -78,14 +83,18 @@ class Searcher:
                         #TFIDF for this specific term in this query:
                         tfTermInQuery = query_dict[term] / max(query_dict.values()) #IDF would be equal 1
 
-                        tfIdfAllTermsInDocPow = self.tfPowForTerm(docID)
 
-                        if docID not in relevant_docs.keys():
-                          relevant_docs[docID] = [{term:[tfTermInDoc*idfTermInDoc, tfTermInQuery, tfIdfAllTermsInDocPow]},0] #we can delete the number
+                        if docID not in relevant_docs[0].keys():
+
+                            # TFIDF for the whole terms in in the doc:
+                            tfIdfAllTermsInDocPow = self.tfPowForTerm(docID)
+
+                            relevant_docs[0][docID] = [{term:[tfTermInDoc*idfTermInDoc, tfTermInQuery]}, tfIdfAllTermsInDocPow, 0] #we can delete the number
+
                         else:
-                            if termIndex > 0 and query_dict[list(query_dict.keys())[termIndex-1]] in relevant_docs[docID][0].keys(): #its a term
-                                relevant_docs[docID][1] += 1 #bonous
-                            relevant_docs[docID][0][term] = [tfTermInDoc*idfTermInDoc, tfTermInQuery, tfIdfAllTermsInDocPow]
+                            if termIndex > 0 and query_dict[list(query_dict.keys())[termIndex-1]] in relevant_docs[0][docID][0].keys(): #its a term
+                                relevant_docs[0][docID][2] += 1 #bonous
+                            relevant_docs[0][docID][0][term] = [tfTermInDoc*idfTermInDoc, tfTermInQuery]
 
 
             except:
@@ -110,11 +119,11 @@ class Searcher:
         for term in self.term_max_freq[docID][1].keys():
 
             type = [0, 1, 2, 3]
-
+            t = term[0]
             # Deciding the type of the term
             if (self.isfloat(term) == True):  # numbers
                 type = 0
-            elif (len(term) == 1):  # others
+            elif (term[0] not in string.ascii_lowercase and term[0] not in string.ascii_uppercase):  # others
                 type = 1
             elif (' ' in term):  # entities
                 type = 2
@@ -123,4 +132,13 @@ class Searcher:
             tfTerm = self.term_max_freq[docID][1][term] / self.term_max_freq[docID][0]
             idfTermInDoc = math.log((len(self.term_max_freq.keys()) / self.inverted_index[type][term][0]), 2)
             tfSquareSum += math.pow( (tfTerm*idfTermInDoc) ,2)
+        return tfSquareSum
+
+    def tfPowForTermQuery(self,term_query):
+        '''
+        This function gets tweet id and count the sum of TF^2 of all the terms in this tweet
+        '''
+        tfSquareSum = 0
+        for term in term_query.keys():
+            tfSquareSum += math.pow( (term_query[term]/max(term_query.values())) ,2)
         return tfSquareSum
