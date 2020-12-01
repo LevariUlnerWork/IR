@@ -1,3 +1,4 @@
+import search_engine
 import pickle
 from queue import PriorityQueue
 
@@ -20,3 +21,6 @@ def load_obj(name):
     """
     with open(name + '.pkl', 'rb') as f:
         return pickle.load(f)
+
+def load_inverted_index(output_path):
+    return load_obj(output_path + "/inverted_idx")

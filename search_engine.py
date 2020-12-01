@@ -15,7 +15,7 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
 
     :return:
     """
-    startTimer = time.time()
+    # startTimer = time.time()
     number_of_documents = 0
     stemmerLocal = None
     config = ConfigClass()
@@ -52,19 +52,19 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
 
 
     while i < 1:# len(listOfDoc):
-        startRead = time.time()
+        #startRead = time.time()
         documents_list = r.read_file(file_name=listOfDoc[i])
         i += 1
-        endRead = time.time()
-        readTime = endRead - startRead
-        print("Read time: %s" % readTime)
+        # endRead = time.time()
+        # readTime = endRead - startRead
+        # print("Read time: %s" % readTime)
 
         # Iterate over every document in the file
         for idx, document in enumerate(documents_list):
 
             if(number_of_documents == 300):
                 break
-            startParse = time.time()
+            #startParse = time.time()
             # parse the document
             parsed_document = p.parse_doc(document)
             number_of_documents += 1
@@ -72,19 +72,19 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
             pdl = len(parsed_document.term_doc_dictionary.keys())  # term_dict length
             if (pdl > 0):
                 indexer.add_new_doc(parsed_document)
-            endParse = time.time()
-            print("elapsed time %s" % (endParse - startParse))
-            print("Tw Num %s" % (number_of_documents))
+            # endParse = time.time()
+            # print("elapsed time %s" % (endParse - startParse))
+            # print("Tw Num %s" % (number_of_documents))
             # if (number_of_documents in stopPoints):
             if (number_of_documents % 100 == 0):
                 indexer.savePostingFile(savingPath)
 
-    print('Finished parsing and indexing. Starting to export files')
+    #print('Finished parsing and indexing. Starting to export files')
     if(number_of_documents not in stopPoints):
         indexer.savePostingFile(savingPath)
     utils.save_obj(indexer.inverted_idx, "inverted_idx")
     utils.save_obj(indexer.term_max_freq, "term_max_freq")
-    print ('Time to run: %s' % (startTimer - time.time()))
+    #print ('Time to run: %s' % (startTimer - time.time()))
 
 
 
@@ -93,12 +93,12 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
 
 
 def load_index():
-    print('Load inverted index')
+    #print('Load inverted index')
     inverted_index = utils.load_obj("inverted_idx")
     return inverted_index
 
 def load_max_freq():
-    print('Load term max freq dictionary')
+    #print('Load term max freq dictionary')
     inverted_index = utils.load_obj("term_max_freq")
     return inverted_index
 
@@ -135,16 +135,17 @@ def main(corpus_path = "",output_path = "PostingFiles",stemming=True,queries = [
 
     else: #if queries is a list of queries
         queries_list = queries
-    # try:
-    if(num_docs_to_retrieve > 2000):
-            print("Number of docs to rertrieve cannot be more than 2000, so it changes to 2000 now")
+    try:
+        if(num_docs_to_retrieve > 2000):
+            #print("Number of docs to rertrieve cannot be more than 2000, so it changes to 2000 now")
             num_docs_to_retrieve=2000
-    inverted_index = load_index()
-    term_max_freq = load_max_freq()
-    for query in queries_list:
-            print('\n' + 'Query: ' + query)
-            print('results:' + '\n')
+        inverted_index = load_index()
+        term_max_freq = load_max_freq()
+        for query in queries_list:
+            #print('\n' + 'Query: ' + query)
+            #print('results:' + '\n')
             for doc_tuple in search_and_rank_query(query, inverted_index, term_max_freq, num_docs_to_retrieve, stemming ,output_path):
                 print('tweet id: {}, score (unique common words with query): {}'.format(doc_tuple[1], doc_tuple[0]))
-    # except:
-    #     print("Please enter queries first")
+    except:
+         pass
+         #print("Please enter queries first")

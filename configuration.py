@@ -11,3 +11,4 @@ class ConfigClass:
 
     def get__corpusPath(self):
         return self.corpusPath
+
