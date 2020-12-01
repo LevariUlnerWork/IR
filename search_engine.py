@@ -1,3 +1,4 @@
+import csv
 import time
 import numpy as np
 from reader import ReadFile
@@ -124,28 +125,37 @@ def main(corpus_path = "",output_path = "PostingFiles",stemming=True,queries = [
 
     run_engine(corpus_path,output_path,stemming)
 
+    #full_path = open('queries.txt',"r")
+    queries_list = [] # full_path.readline()#.split("\n")
 
-    #query = input("Please enter a query: ")
-    if(type(queries) == str):
-        try: #If there is a file of queries
-            r2 = ReadFile(queries)
-            queries_list =r2.read_file(queries)
-        except:#if queries is one line of query
-            queries_list = [queries]
+    #create csv file:
+    with open("results.csv", 'w', newline='') as csvfile:
+        filewriter = csv.writer(csvfile)
+        filewriter.writerow(["Query_num", "Tweet_id", "Rank"])
 
-    else: #if queries is a list of queries
-        queries_list = queries
-    try:
-        if(num_docs_to_retrieve > 2000):
-            #print("Number of docs to rertrieve cannot be more than 2000, so it changes to 2000 now")
-            num_docs_to_retrieve=2000
-        inverted_index = load_index()
-        term_max_freq = load_max_freq()
-        for query in queries_list:
-            #print('\n' + 'Query: ' + query)
-            #print('results:' + '\n')
-            for doc_tuple in search_and_rank_query(query, inverted_index, term_max_freq, num_docs_to_retrieve, stemming ,output_path):
-                print('tweet id: {}, score (unique common words with query): {}'.format(doc_tuple[1], doc_tuple[0]))
-    except:
-         pass
+        #query = input("Please enter a query: ")
+        if(type(queries) == str):
+            try: #If there is a file of queries
+                full_path = open(queries, "r")
+                queries_list += full_path.read(queries)
+            except:#if queries is one line of query
+                queries_list += [queries]
+
+        else: #if queries is a list of queries
+            queries_list += queries
+        try:
+            if(num_docs_to_retrieve > 2000):
+                #print("Number of docs to rertrieve cannot be more than 2000, so it changes to 2000 now")
+                num_docs_to_retrieve=2000
+            inverted_index = load_index()
+            term_max_freq = load_max_freq()
+            for queryIndex in range(len(queries_list)):
+                query = queries_list[queryIndex]
+                #print('\n' + 'Query: ' + query)
+                #print('results:' + '\n')
+                for doc_tuple in search_and_rank_query(query, inverted_index, term_max_freq, num_docs_to_retrieve, stemming ,output_path):
+                    print('tweet id: {}, score (unique common words with query): {}'.format(doc_tuple[1], doc_tuple[0]))
+                    filewriter.writerow([queryIndex, doc_tuple[1], doc_tuple[0]])
+        except:
+            pass
          #print("Please enter queries first")
