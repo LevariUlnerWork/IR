@@ -56,6 +56,12 @@ class Searcher:
                 else:  # strings
                     type = 3
 
+                if(term not in self.inverted_index[type].keys()):
+                    if(term.lower() in self.inverted_index[3].keys()):
+                        term = term.lower()
+                        type=3
+                    else:
+                        continue
                 postingNames = self.inverted_index[type][term][2]
 
 
@@ -98,7 +104,7 @@ class Searcher:
 
 
             except:
-                print('term {} not found in posting'.format(term))
+                pass
         return relevant_docs
 
     def isfloat(self,value):
@@ -129,6 +135,9 @@ class Searcher:
                 type = 2
             else:  # strings
                 type = 3
+            if(term not in self.inverted_index[type].keys()):
+                continue
+
             tfTerm = self.term_max_freq[docID][1][term] / self.term_max_freq[docID][0]
             idfTermInDoc = math.log((len(self.term_max_freq.keys()) / self.inverted_index[type][term][0]), 2)
             tfSquareSum += math.pow( (tfTerm*idfTermInDoc) ,2)
