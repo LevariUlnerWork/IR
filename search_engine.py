@@ -20,7 +20,6 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
     number_of_documents = 0
     stemmerLocal = None
     config = ConfigClass()
-    r = ReadFile(corpus_path=config.get__corpusPath())
     indexer = Indexer(config)
     savingPath = output_path + config.saveFilesWithoutStem + "/"
     if(stemming == True):
@@ -29,6 +28,7 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
     p = Parse(stemming=stemmerLocal, iIndexer=indexer)  # Changed by Lev
     if os.path.exists(savingPath) == False:
         os.makedirs(savingPath)
+    r = ReadFile(corpus_path=config.get__corpusPath())
 
     #read all files from all folders:
     listOfFold = os.listdir(config.get__corpusPath()) #list of folders
@@ -63,8 +63,8 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
         # Iterate over every document in the file
         for idx, document in enumerate(documents_list):
 
-            if(number_of_documents == 300):
-                break
+            # if(number_of_documents == 300):
+            #     break
             #startParse = time.time()
             # parse the document
             parsed_document = p.parse_doc(document)
@@ -76,8 +76,8 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
             # endParse = time.time()
             # print("elapsed time %s" % (endParse - startParse))
             # print("Tw Num %s" % (number_of_documents))
-            # if (number_of_documents in stopPoints):
-            if (number_of_documents % 100 == 0):
+            if (number_of_documents in stopPoints):
+            # if (number_of_documents % 100 == 0):
                 indexer.savePostingFile(savingPath)
 
     #print('Finished parsing and indexing. Starting to export files')
