@@ -25,7 +25,7 @@ class Searcher:
         postingLoadedNames = [] # Names of posting file which we already loaded.
         posting = [] # List of posting files which were loaded already
 
-        relevant_docs = {} #{docID: [{terms in query:tfidf} , bonus_score]}
+        relevant_docs = {} #{docID: [{terms in query:[tfIdfTermInDoc, TfIdfTermInQuery , sumOfAllTfIdfEveryTerm ^2} , bonus_score]}
         query_dict = {}
         for termInd in range(len(query)):
             term = query[termInd]
@@ -64,18 +64,28 @@ class Searcher:
                     posting_index = postingLoadedNames.index(postingName)
                     posting_doc = posting[posting_index][term] # load the relevant tweets data per term
                     for doc_tuple in posting_doc:
+
+                        numOfDocsPerTerm += 1
+
                         docID = doc_tuple[1]
                         freq = doc_tuple[0]
                         maxFreqInDoc = self.term_max_freq[docID][0]
-                        tf = freq /  maxFreqInDoc
-                        idf = math.log((len(self.term_max_freq.keys()) / self.inverted_index[type][term][0]), 2)
-                        numOfDocsPerTerm += 1
+
+                        #TFIDF for this specific term in this specific doc:
+                        tfTermInDoc = freq /  maxFreqInDoc
+                        idfTermInDoc = math.log((len(self.term_max_freq.keys()) / self.inverted_index[type][term][0]), 2)
+
+                        #TFIDF for this specific term in this query:
+                        tfTermInQuery = query_dict[term] / max(query_dict.values()) #IDF would be equal 1
+
+                        tfIdfAllTermsInDocPow = self.tfPowForTerm(docID)
+
                         if docID not in relevant_docs.keys():
-                          relevant_docs[docID] = [{term:tf*idf * query_dict[term]},0] #we can delete the number
+                          relevant_docs[docID] = [{term:[tfTermInDoc*idfTermInDoc, tfTermInQuery, tfIdfAllTermsInDocPow]},0] #we can delete the number
                         else:
                             if termIndex > 0 and query_dict[list(query_dict.keys())[termIndex-1]] in relevant_docs[docID][0].keys(): #its a term
                                 relevant_docs[docID][1] += 1 #bonous
-                            relevant_docs[docID][0][term] = tf*idf
+                            relevant_docs[docID][0][term] = [tfTermInDoc*idfTermInDoc, tfTermInQuery, tfIdfAllTermsInDocPow]
 
 
             except:
@@ -90,3 +100,27 @@ class Searcher:
             return True
         except ValueError:
             return False
+
+
+    def tfPowForTerm(self,docID):
+        '''
+        This function gets tweet id and count the sum of TF^2 of all the terms in this tweet
+        '''
+        tfSquareSum = 0
+        for term in self.term_max_freq[docID][1].keys():
+
+            type = [0, 1, 2, 3]
+
+            # Deciding the type of the term
+            if (self.isfloat(term) == True):  # numbers
+                type = 0
+            elif (len(term) == 1):  # others
+                type = 1
+            elif (' ' in term):  # entities
+                type = 2
+            else:  # strings
+                type = 3
+            tfTerm = self.term_max_freq[docID][1][term] / self.term_max_freq[docID][0]
+            idfTermInDoc = math.log((len(self.term_max_freq.keys()) / self.inverted_index[type][term][0]), 2)
+            tfSquareSum += math.pow( (tfTerm*idfTermInDoc) ,2)
+        return tfSquareSum

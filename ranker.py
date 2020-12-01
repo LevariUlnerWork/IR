@@ -16,8 +16,8 @@ class Ranker:
         docRanker = []  # List of COSIM for each doc
         for docID in relevant_doc.keys():
 
-            enumerate = sum(relevant_doc[docID][0].values())
-            denominator = math.sqrt(sum([math.pow(x,2) for x in relevant_doc[docID][0].values()]))
+            enumerate = sum([relevant_doc[docID][0][x][0] * relevant_doc[docID][0][x][1] for x in relevant_doc[docID][0].keys()])
+            denominator = math.sqrt(sum([relevant_doc[docID][0][x][2] * math.pow(relevant_doc[docID][0][x][1]) for x in relevant_doc[docID][0].values()]))
             docRanker.append( ((enumerate/denominator)+relevant_doc[docID][1], docID) ) # tuple: (cosSim,docID)
 
         return sorted(docRanker, reverse=True)
