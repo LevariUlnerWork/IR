@@ -1,6 +1,5 @@
 import os
 import pandas as pd
-#HI
 
 class ReadFile:
     def __init__(self, corpus_path):
