@@ -52,7 +52,7 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
         stopPoints.append(int(point))
 
 
-    while i < len(listOfDoc):
+    while i < 1:# len(listOfDoc):
         #startRead = time.time()
         documents_list = r.read_file(file_name=listOfDoc[i])
         i += 1
@@ -63,8 +63,8 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
         # Iterate over every document in the file
         for idx, document in enumerate(documents_list):
 
-            # if(number_of_documents == 300):
-            #     break
+            if(number_of_documents == 300):
+                break
             #startParse = time.time()
             # parse the document
             parsed_document = p.parse_doc(document)
@@ -76,8 +76,8 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
             # endParse = time.time()
             # print("elapsed time %s" % (endParse - startParse))
             # print("Tw Num %s" % (number_of_documents))
-            if (number_of_documents in stopPoints):
-            # if (number_of_documents % 100 == 0):
+            # if (number_of_documents in stopPoints):
+            if (number_of_documents % 100 == 0):
                 indexer.savePostingFile(savingPath)
 
     #print('Finished parsing and indexing. Starting to export files')
@@ -90,7 +90,7 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
             posting = indexer.inverted_idx[2][entity][2][0]
             posting_dict = utils.load_obj(savingPath + posting)
             posting_dict.pop(entity)
-            utils.save_obj(posting_dict, posting)
+            utils.save_obj(posting_dict, savingPath + posting)
             indexer.inverted_idx[2].pop(entity)
 
     utils.save_obj(indexer.inverted_idx, "inverted_idx")
