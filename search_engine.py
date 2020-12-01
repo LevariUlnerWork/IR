@@ -53,19 +53,19 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
 
 
     while i < 1:# len(listOfDoc):
-        #startRead = time.time()
+        startRead = time.time()
         documents_list = r.read_file(file_name=listOfDoc[i])
         i += 1
-        # endRead = time.time()
-        # readTime = endRead - startRead
-        # print("Read time: %s" % readTime)
+        endRead = time.time()
+        readTime = endRead - startRead
+        print("Read time: %s" % readTime)
 
         # Iterate over every document in the file
         for idx, document in enumerate(documents_list):
 
             # if(number_of_documents == 300):
             #     break
-            #startParse = time.time()
+            startParse = time.time()
             # parse the document
             parsed_document = p.parse_doc(document)
             number_of_documents += 1
@@ -73,9 +73,9 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
             pdl = len(parsed_document.term_doc_dictionary.keys())  # term_dict length
             if (pdl > 0):
                 indexer.add_new_doc(parsed_document)
-            # endParse = time.time()
-            # print("elapsed time %s" % (endParse - startParse))
-            # print("Tw Num %s" % (number_of_documents))
+            endParse = time.time()
+            print("elapsed time %s" % (endParse - startParse))
+            print("Tw Num %s" % (number_of_documents))
             if (number_of_documents in stopPoints):
             # if (number_of_documents % 100 == 0):
                 indexer.savePostingFile(savingPath)
@@ -95,7 +95,7 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
 
     utils.save_obj(indexer.inverted_idx, "inverted_idx")
     utils.save_obj(indexer.term_max_freq, "term_max_freq")
-    #print ('Time to run: %s' % (startTimer - time.time()))
+    print ('Time to run: %s' % (startTimer - time.time()))
 
 
 
@@ -140,6 +140,7 @@ def main(corpus_path = "",output_path = "PostingFiles",stemming=True,queries = [
 
     #create csv file:
     with open("results.csv", 'w', newline='') as csvfile:
+        startCode = time.time()
         filewriter = csv.writer(csvfile)
         filewriter.writerow(["Query_num", "Tweet_id", "Rank"])
 
@@ -169,3 +170,6 @@ def main(corpus_path = "",output_path = "PostingFiles",stemming=True,queries = [
         except:
             pass
          #print("Please enter queries first")
+    stopcode= time.time() - startCode
+    print ("The end after: " + stopcode)
+    the_end = 1
