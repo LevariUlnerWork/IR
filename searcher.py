@@ -56,13 +56,13 @@ class Searcher:
                 else:  # strings
                     type = 3
 
-                if(term not in self.inverted_index[type].keys()):
-                    if(term.lower() in self.inverted_index[3].keys()):
+                if(term not in self.inverted_index.keys()):
+                    if(term.lower() in self.inverted_index.keys()):
                         term = term.lower()
                         type=3
                     else:
                         continue
-                postingNames = self.inverted_index[type][term][2]
+                postingNames = self.inverted_index[term][2]
 
 
                 numOfDocsPerTerm = 0
@@ -84,7 +84,7 @@ class Searcher:
 
                         #TFIDF for this specific term in this specific doc:
                         tfTermInDoc = freq /  maxFreqInDoc
-                        idfTermInDoc = math.log((len(self.term_max_freq.keys()) / self.inverted_index[type][term][0]), 2)
+                        idfTermInDoc = math.log((len(self.term_max_freq.keys()) / self.inverted_index[term][0]), 2)
 
                         #TFIDF for this specific term in this query:
                         tfTermInQuery = query_dict[term] / max(query_dict.values()) #IDF would be equal 1
@@ -135,11 +135,11 @@ class Searcher:
                 type = 2
             else:  # strings
                 type = 3
-            if(term not in self.inverted_index[type].keys()):
+            if(term not in self.inverted_index.keys()):
                 continue
 
             tfTerm = self.term_max_freq[docID][1][term] / self.term_max_freq[docID][0]
-            idfTermInDoc = math.log((len(self.term_max_freq.keys()) / self.inverted_index[type][term][0]), 2)
+            idfTermInDoc = math.log((len(self.term_max_freq.keys()) / self.inverted_index[term][0]), 2)
             tfSquareSum += math.pow( (tfTerm*idfTermInDoc) ,2)
         return tfSquareSum
 

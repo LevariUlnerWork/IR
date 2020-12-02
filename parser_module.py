@@ -43,7 +43,7 @@ class Parse:
             word = text_tokens_without_stopwords[wordInx]
             if len(word) > 1 and word[0].isupper() and ' ' not in word and '-' not in word:
                 # for case: Max -> max
-                if (word.lower() in self.invIdx[3].keys()):
+                if (word.lower() in self.invIdx.keys()):
                     word = word.lower()
                     text_tokens_without_stopwords[wordInx] = word
                 # for case: Max -> MAX

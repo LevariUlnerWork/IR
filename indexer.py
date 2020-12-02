@@ -4,12 +4,9 @@ from queue import PriorityQueue
 class Indexer:
 
     def __init__(self, config):
-        #self.inverted_idx_nums = {}  # (key - term): [num Of docs, freq in corpus, [pointers to posting files]]
-        #self.inverted_idx_others = {}  # (key - term): [num Of docs, freq in corpus, [pointers to posting files]]
-        #self.inverted_idx_ents = {}  # (key - term): [num Of docs, freq in corpus,[pointers to posting files]]
-        #self.inverted_idx_strs = {}  # (key - term): [num Of docs, freq in corpus, [pointers to posting files]]
 
-        self.inverted_idx = [{}, {}, {}, {}]  # self.inverted_idx = [inverted_idx_nums, inverted_idx_ents, inverted_idx_others, inverted_idx_strs]
+
+        self.inverted_idx = {}  # self.inverted_idx = [inverted_idx_nums, inverted_idx_ents, inverted_idx_others, inverted_idx_strs]
         '''
         the inverted index dictionary is a list of 4 dictionaries:
         #self.inverted_idx_nums = {}  # (key - term): [num Of docs, freq in corpus, pointer to posting file]
@@ -84,7 +81,7 @@ class Indexer:
                     type = 3
 
 
-                if term not in self.inverted_idx[type].keys():
+                if term not in self.inverted_idx.keys():
                     if(type==3):
                         letterIndex = 0
                         if(term[0] in string.ascii_lowercase): #Starts with 'á','b'...
@@ -94,16 +91,16 @@ class Indexer:
 
                         self.postingDicts[3][letterIndex][term] = []
                         self.postingDicts[type][letterIndex][term].append([document_dictionary[term][1], docID, document_dictionary[term][0]])
-                        self.inverted_idx[type][term] = [1, document_dictionary[term][1], [self.postingDictNames[type][letterIndex]]]
+                        self.inverted_idx[term] = [1, document_dictionary[term][1], [self.postingDictNames[type][letterIndex]]]
                     else:
                         self.postingDicts[type][term] = []
                         self.postingDicts[type][term].append([document_dictionary[term][1], docID, document_dictionary[term][0]])
-                        self.inverted_idx[type][term] = [1, document_dictionary[term][1], [self.postingDictNames[type]]]
+                        self.inverted_idx[term] = [1, document_dictionary[term][1], [self.postingDictNames[type]]]
 
                 else:
                     #update inv_dict:
-                    self.inverted_idx[type][term][0] += 1 # add another doc to the count in the inv_dict
-                    self.inverted_idx[type][term][1] += document_dictionary[term][1]
+                    self.inverted_idx[term][0] += 1 # add another doc to the count in the inv_dict
+                    self.inverted_idx[term][1] += document_dictionary[term][1]
 
                     if(type == 3):
                         if (term[0] in string.ascii_lowercase):  # Starts with 'á','b'...
@@ -113,12 +110,12 @@ class Indexer:
 
                         if term not in self.postingDicts[type][letterIndex].keys():
                             self.postingDicts[type][letterIndex][term] = []
-                            self.inverted_idx[type][term][2].append(self.postingDictNames[type][letterIndex])
+                            self.inverted_idx[term][2].append(self.postingDictNames[type][letterIndex])
                         self.postingDicts[type][letterIndex][term].append([document_dictionary[term][1], docID, document_dictionary[term][0]])
                     else:
                         if term not in self.postingDicts[type].keys():
                             self.postingDicts[type][term] = []
-                            self.inverted_idx[type][term][2].append(self.postingDictNames[type])
+                            self.inverted_idx[term][2].append(self.postingDictNames[type])
                         self.postingDicts[type][term].append([document_dictionary[term][1], docID, document_dictionary[term][0]])
                 # Update the public inverted index and termMax
 

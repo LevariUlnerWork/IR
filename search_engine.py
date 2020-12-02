@@ -66,8 +66,8 @@ def run_engine(corpus_path,output_path = "",stemming=True):
         # Iterate over every document in the file
         for idx, document in enumerate(documents_list):
 
-            # if(number_of_documents == 300):
-            #     break
+            if(number_of_documents == 350):
+                break
             startParse = time.time()
             # parse the document
             parsed_document = p.parse_doc(document)
@@ -79,8 +79,8 @@ def run_engine(corpus_path,output_path = "",stemming=True):
             endParse = time.time()
             # print("elapsed time %s" % (endParse - startParse))
             # print("Tw Num %s" % (number_of_documents))
-            if (number_of_documents in stopPoints):
-            # if (number_of_documents % 100 == 0):
+            # if (number_of_documents in stopPoints):
+            if (number_of_documents % 100 == 0):
                 indexer.savePostingFile(savingPath)
 
     #print('Finished parsing and indexing. Starting to export files')
@@ -88,13 +88,13 @@ def run_engine(corpus_path,output_path = "",stemming=True):
         indexer.savePostingFile(savingPath)
 
     # Delete little entities:
-    for entity in list(indexer.inverted_idx[2].keys()):
-        if (indexer.inverted_idx[2][entity][0] == 1):
+    for entity in list(indexer.inverted_idx.keys()):
+        if (indexer.inverted_idx[entity][0] == 1):
             # posting = indexer.inverted_idx[2][entity][2][0]
             # posting_dict = utils.load_obj(savingPath + posting)
             # posting_dict.pop(entity)
             # utils.save_obj(posting_dict, savingPath + posting)
-            indexer.inverted_idx[2].pop(entity)
+            indexer.inverted_idx.pop(entity)
 
     utils.save_obj(indexer.inverted_idx, "inverted_idx")
     utils.save_obj(indexer.term_max_freq, "term_max_freq")
@@ -133,6 +133,14 @@ def search_and_rank_query(query, inverted_index, term_max_freq, num_docs_to_retr
 
 
 def main(corpus_path = "TestData/",output_path = "posting",stemming=True,queries = ["What to do"],num_docs_to_retrieve = 2000):
+    '''
+    inv_dict = utils.load_inverted_index()
+    with open("inv_dict.csv", 'w', newline='') as csvfile:
+        filewriter = csv.writer(csvfile)
+        for type in range (4):
+            for term in inv_dict[type].keys():
+                filewriter.writerow([term, inv_dict[type][0] , inv_dict[type][1], inv_dict[type][2]])
+    '''
     if("/" not in corpus_path):
         corpus_path += "/"
     if ("/" not in output_path):
@@ -174,10 +182,10 @@ def main(corpus_path = "TestData/",output_path = "posting",stemming=True,queries
                 #print('results:' + '\n')
                 for doc_tuple in search_and_rank_query(query, inverted_index, term_max_freq, num_docs_to_retrieve, stemming ,output_path):
                     print('tweet id: {}, score (unique common words with query): {}'.format(doc_tuple[1], doc_tuple[0]))
-                    filewriter.writerow([queryIndex, "{:f}".format(doc_tuple[1]), doc_tuple[0]])
+                    filewriter.writerow([queryIndex, "%s" % (doc_tuple[1]), doc_tuple[0]])
         except:
             pass
-         #print("Please enter queries first")
+        #print("Please enter queries first")
     stopcode= time.time() - startCode
     # print ("The end after: " + stopcode)
     the_end = 1
