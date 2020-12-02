@@ -131,7 +131,7 @@ def search_and_rank_query(query, inverted_index, term_max_freq, num_docs_to_retr
     return searcher.ranker.retrieve_top_k(ranked_docs, num_docs_to_retrieve)
 
 
-def main(corpus_path = "TestData/",output_path = "posting",stemming=True,queries = ["What to do"],num_docs_to_retrieve = 2000):
+def main(corpus_path = "Data/",output_path = "posting",stemming=True,queries = ["What to do"],num_docs_to_retrieve = 2000):
 
     if("/" != corpus_path[len(corpus_path)-1]):
         corpus_path += "/"
