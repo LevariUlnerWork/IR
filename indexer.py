@@ -3,7 +3,7 @@ import string
 from queue import PriorityQueue
 class Indexer:
 
-    def __init__(self, config):
+    def __init__(self):
 
 
         self.inverted_idx = {}  # self.inverted_idx = [inverted_idx_nums, inverted_idx_ents, inverted_idx_others, inverted_idx_strs]
@@ -36,7 +36,6 @@ class Indexer:
         we also have one list of dictionaries for strings:
         #self.postingDictStrs [a{},b{}...A{},B{}...] = {}  # Current posting file (key - term): Heap:[freq, docID, [indexes]]
         '''
-        self.config = config
 
     def add_new_doc(self, document):
         """

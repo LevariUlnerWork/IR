@@ -211,6 +211,7 @@ class Parse:
         text = text.replace('!', ' ')
         text = text.replace('&', ' ')
         text = text.replace(';', ' ')
+        text = text.replace('+', ' ')
         text = text.replace(':', ' ')
         text = text.replace('"', ' ')
         text = text.replace('(', ' ')
