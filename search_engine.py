@@ -11,7 +11,7 @@ import utils
 import os
 
 
-def run_engine(corpus_path = "",output_path = "",stemming=True):
+def run_engine(corpus_path,output_path = "",stemming=True):
     """
 
     :return:
@@ -28,15 +28,18 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
     p = Parse(stemming=stemmerLocal, iIndexer=indexer)  # Changed by Lev
     if os.path.exists(savingPath) == False:
         os.makedirs(savingPath)
-    r = ReadFile(corpus_path=config.get__corpusPath())
+    r = ReadFile(corpus_path)
 
     #read all files from all folders:
-    listOfFold = os.listdir(config.get__corpusPath()) #list of folders
+    listOfFold = os.listdir(corpus_path) #list of folders
     listOfDoc = [] #list of files and their paths
     for folder in listOfFold:
         if(".DS" in folder):
             continue
-        listOfDocsBefore = os.listdir(config.get__corpusPath() + folder)
+        if(".parquet" in folder):
+            listOfDoc += [folder]
+            continue
+        listOfDocsBefore = os.listdir(corpus_path + folder)
         for file in listOfDocsBefore:
             if (".DS" in file):
                 continue
@@ -58,7 +61,7 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
         i += 1
         endRead = time.time()
         readTime = endRead - startRead
-        print("Read time: %s" % readTime)
+        #print("Read time: %s" % readTime)
 
         # Iterate over every document in the file
         for idx, document in enumerate(documents_list):
@@ -74,8 +77,8 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
             if (pdl > 0):
                 indexer.add_new_doc(parsed_document)
             endParse = time.time()
-            print("elapsed time %s" % (endParse - startParse))
-            print("Tw Num %s" % (number_of_documents))
+            # print("elapsed time %s" % (endParse - startParse))
+            # print("Tw Num %s" % (number_of_documents))
             if (number_of_documents in stopPoints):
             # if (number_of_documents % 100 == 0):
                 indexer.savePostingFile(savingPath)
@@ -95,7 +98,7 @@ def run_engine(corpus_path = "",output_path = "",stemming=True):
 
     utils.save_obj(indexer.inverted_idx, "inverted_idx")
     utils.save_obj(indexer.term_max_freq, "term_max_freq")
-    print ('Time to run: %s' % (startTimer - time.time()))
+    # print ('Time to run: %s' % (startTimer - time.time()))
 
 
 
@@ -129,7 +132,12 @@ def search_and_rank_query(query, inverted_index, term_max_freq, num_docs_to_retr
     return searcher.ranker.retrieve_top_k(ranked_docs, num_docs_to_retrieve)
 
 
-def main(corpus_path = "",output_path = "PostingFiles",stemming=True,queries = ["What to do"],num_docs_to_retrieve = 5):
+def main(corpus_path = "TestData/",output_path = "posting",stemming=True,queries = ["What to do"],num_docs_to_retrieve = 2000):
+    if("/" not in corpus_path):
+        corpus_path += "/"
+    if ("/" not in output_path):
+        output_path += "/"
+
     if(os.path.exists(output_path) == False):
         os.makedirs(output_path)
 
@@ -166,10 +174,10 @@ def main(corpus_path = "",output_path = "PostingFiles",stemming=True,queries = [
                 #print('results:' + '\n')
                 for doc_tuple in search_and_rank_query(query, inverted_index, term_max_freq, num_docs_to_retrieve, stemming ,output_path):
                     print('tweet id: {}, score (unique common words with query): {}'.format(doc_tuple[1], doc_tuple[0]))
-                    filewriter.writerow([queryIndex, doc_tuple[1], doc_tuple[0]])
+                    filewriter.writerow([queryIndex, "{:f}".format(doc_tuple[1]), doc_tuple[0]])
         except:
             pass
          #print("Please enter queries first")
     stopcode= time.time() - startCode
-    print ("The end after: " + stopcode)
+    # print ("The end after: " + stopcode)
     the_end = 1
