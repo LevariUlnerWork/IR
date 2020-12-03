@@ -1,4 +1,3 @@
-from matplotlib import pylab
 import csv
 import numpy as np
 from reader import ReadFile
@@ -80,9 +79,6 @@ def run_engine(corpus_path,output_path = "",stemming=True):
 
     utils.save_obj(indexer.inverted_idx, "inverted_idx")
     utils.save_obj(indexer.term_max_freq, "term_max_freq")
-
-
-
 
 
 

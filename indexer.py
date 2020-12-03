@@ -35,8 +35,6 @@ class Indexer:
         :return: -
         """
 
-        #TODO: delete 1 time show terms
-        #TODO: split posting files
         docID = document.tweet_id
         document_dictionary = document.term_doc_dictionary # document_dictionary = {term:[[indexes],freq]
         freq_terms = {} # {freq:[terms]} # save the freq of the term in this doc
@@ -53,7 +51,6 @@ class Indexer:
                     freq_terms[document_dictionary[term][1]] = [term]
                 else:
                     freq_terms[document_dictionary[term][1]].append(term)
-
 
 
                 #Update the local dicts: freq of the term in this doc:

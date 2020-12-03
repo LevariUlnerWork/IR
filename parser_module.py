@@ -175,7 +175,7 @@ class Parse:
         index= 0
         for term in tokenized_text: #termDict:{key=term:[[indexes],freq]
 
-            if(term == "t.co" or term == "https"): #think about more words
+            if(term == "t.co" or term == "https"):
                 continue
 
             if term not in term_dict.keys():

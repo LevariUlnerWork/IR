@@ -68,7 +68,7 @@ class Searcher:
                 numOfDocsPerTerm = 0
 
                 for postingName in postingNames:
-                    if(postingName not in postingLoadedNames): #its a list so i think its should be one by one ???????????????
+                    if(postingName not in postingLoadedNames):
                         postingLoadedNames.append(postingName) # Add the name of the new file
                         newPosting = utils.load_obj(self.loadingPath + postingName) # load the file
                         posting.append(newPosting) # Add the dictionary to the posting files
