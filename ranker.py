@@ -30,7 +30,7 @@ class Ranker:
                 denumerator = tfidfAllTermsInDoc*tfidfAllTermsInQuery
                 docRank += enumerate / math.sqrt(denumerator)
 
-            docRanker.append((docRank, docID)) #tuple(cosSim rank, docID)
+            docRanker.append((docRank + docIdBonus, docID)) #tuple(cosSim rank, docID)
 
         return sorted(docRanker, reverse=True)
 

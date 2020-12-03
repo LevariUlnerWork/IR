@@ -107,7 +107,7 @@ class Searcher:
                 pass
         return relevant_docs
 
-    def isfloat(self,value):
+    def isfloat(value):
         if(value[0] == 'i' or value[0] == 'I'):
             return False
         try:

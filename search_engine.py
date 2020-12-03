@@ -1,5 +1,5 @@
+from matplotlib import pylab
 import csv
-import time
 import numpy as np
 from reader import ReadFile
 import stemmer
@@ -13,10 +13,8 @@ import os
 
 def run_engine(corpus_path,output_path = "",stemming=True):
     """
-
     :return:
     """
-    startTimer = time.time()
     number_of_documents = 0
     stemmerLocal = None
     config = ConfigClass()
@@ -47,28 +45,21 @@ def run_engine(corpus_path,output_path = "",stemming=True):
 
     i = 0    #first file index
     documents_list = [] #The list of tweets
-    #Read all files:
 
-    beforeStopPoints = np.linspace(500000, 10000000, 20)  # set the parts of the file, each number in this list is endpoint of 10% of the whole tweets
+    #Read all files:
+    beforeStopPoints = np.linspace(500000, 10000000, 20)  # set the parts of the files
     stopPoints = []
     for point in beforeStopPoints:
         stopPoints.append(int(point))
 
 
     while i < len(listOfDoc):
-        startRead = time.time()
         documents_list = r.read_file(file_name=listOfDoc[i])
         i += 1
-        endRead = time.time()
-        readTime = endRead - startRead
-        print("Read time: %s" % readTime)
 
         # Iterate over every document in the file
         for idx, document in enumerate(documents_list):
 
-            # if(number_of_documents == 350):
-            #     break
-            startParse = time.time()
             # parse the document
             parsed_document = p.parse_doc(document)
             number_of_documents += 1
@@ -76,29 +67,19 @@ def run_engine(corpus_path,output_path = "",stemming=True):
             pdl = len(parsed_document.term_doc_dictionary.keys())  # term_dict length
             if (pdl > 0):
                 indexer.add_new_doc(parsed_document)
-            endParse = time.time()
-            print("elapsed time %s" % (endParse - startParse))
-            print("Tw Num %s" % (number_of_documents))
             if (number_of_documents in stopPoints):
-            # if (number_of_documents % 100 == 0):
                 indexer.savePostingFile(savingPath)
 
-    print('Finished parsing and indexing. Starting to export files')
     if(number_of_documents not in stopPoints):
         indexer.savePostingFile(savingPath)
 
     # Delete little entities:
     for entity in list(indexer.inverted_idx.keys()):
         if (indexer.inverted_idx[entity][0] == 1):
-            # posting = indexer.inverted_idx[2][entity][2][0]
-            # posting_dict = utils.load_obj(savingPath + posting)
-            # posting_dict.pop(entity)
-            # utils.save_obj(posting_dict, savingPath + posting)
             indexer.inverted_idx.pop(entity)
 
     utils.save_obj(indexer.inverted_idx, "inverted_idx")
     utils.save_obj(indexer.term_max_freq, "term_max_freq")
-    print ('Time to run: %s' % (startTimer - time.time()))
 
 
 
@@ -106,12 +87,10 @@ def run_engine(corpus_path,output_path = "",stemming=True):
 
 
 def load_index():
-    print('Load inverted index')
     inverted_index = utils.load_obj("inverted_idx")
     return inverted_index
 
 def load_max_freq():
-    print('Load term max freq dictionary')
     inverted_index = utils.load_obj("term_max_freq")
     return inverted_index
 
@@ -132,7 +111,22 @@ def search_and_rank_query(query, inverted_index, term_max_freq, num_docs_to_retr
 
 
 def main(corpus_path = "Data/",output_path = "posting",stemming=True,queries = ["What to do"],num_docs_to_retrieve = 2000):
-
+    '''
+    dict_final_data =  utils.load_inverted_index()
+    final_data = {}
+    for i in range (4):
+        for term in dict_final_data[i].keys():
+            final_data[term]  = [dict_final_data[i][term][0], dict_final_data[i][term][1]]
+    sorted_final_data = sorted(final_data.items(), key=lambda item: item[1], reverse=False)
+    n = len(sorted_final_data)
+    ranks = range(1, n + 1)  # x-axis: the ranks
+    freqs = [freq for (word, freq) in sorted_final_data]  # y-axis: the frequencies
+    pylab.loglog(ranks, freqs, label='alice')  # this plots frequency, not relative frequency
+    pylab.xlabel('log(rank)')
+    pylab.ylabel('log(freq)')
+    pylab.legend(loc='lower left')
+    pylab.show()
+    '''
     if("/" != corpus_path[len(corpus_path)-1]):
         corpus_path += "/"
     if ("/" != output_path[len(output_path)-1]):
@@ -148,7 +142,6 @@ def main(corpus_path = "Data/",output_path = "posting",stemming=True,queries = [
 
     #create csv file:
     with open("results.csv", 'w', newline='') as csvfile:
-        startCode = time.time()
         filewriter = csv.writer(csvfile)
         filewriter.writerow(["Query_num", "Tweet_id", "Rank"])
 
@@ -164,17 +157,16 @@ def main(corpus_path = "Data/",output_path = "posting",stemming=True,queries = [
             queries_list += queries
         try:
             if(num_docs_to_retrieve > 2000):
-                print("Number of docs to rertrieve cannot be more than 2000, so it changes to 2000 now")
                 num_docs_to_retrieve=2000
             inverted_index = load_index()
             term_max_freq = load_max_freq()
             for queryIndex in range(len(queries_list)):
                 query = queries_list[queryIndex]
-                print('\n' + 'Query: ' + query)
-                print('results:' + '\n')
                 for doc_tuple in search_and_rank_query(query, inverted_index, term_max_freq, num_docs_to_retrieve, stemming ,output_path):
                     print('tweet id: {}, score (unique common words with query): {}'.format(doc_tuple[1], doc_tuple[0]))
                     filewriter.writerow([queryIndex, "%s" % (doc_tuple[1]), doc_tuple[0]])
         except:
             pass
-    todebug = True
+
+
+

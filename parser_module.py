@@ -10,7 +10,6 @@ class Parse:
         full_path = open('stop-words.txt',"r")
         listOfStopWords = full_path.read()
         self.stemmering = stemming
-        #print(listOfStopWords)
         full_path.close()
         self.stop_words = listOfStopWords.split(",")
         self.invIdx = None
@@ -19,24 +18,14 @@ class Parse:
         elif(invIdx != None):
             self.invIdx = invIdx
 
-        #print(type(self.stop_words))
-
-
     def parse_sentence(self, text):
         """
         This function tokenize, remove stop words and apply lower case for every word within the text
         :param text: Every tweet/query
         :return: list of terms
         """
-        #Not using - text_tokens = word_tokenize(text)
         text_tokens = Parse.tokenize_words(text)
-
-        #if the len of query without stop-words is 0 - dont use stop-words -----------------CHECK------------------------
-        #if(len(w.lower() for w in query if w not in self.stop_words) == 0):
-        #    text_tokens_without_stopwords = [w.lower() for w in text_tokens]
-        #else:
         text_tokens_without_stopwords = [w for w in text_tokens if w not in self.stop_words]
-
 
         #capital and lower letters
         for wordInx in range(len(text_tokens_without_stopwords)):
@@ -133,10 +122,6 @@ class Parse:
         retweet_quoted_indices = doc_as_list[13]
         term_dict = {}
 
-        #isit = self.parse_sentence("y'all") #to check ourselves texts
-        #TODO: delete terms: '/-', "\'","\" , 132,000+, "𝑩𝒓𝒆𝒂𝒌𝒊𝒏𝒈: 𝑯𝒖𝒔𝒉𝒑𝒖𝒑𝒑𝒊 𝒉𝒂𝒔 𝒕𝒆𝒔𝒕𝒆𝒅 𝒑𝒐𝒔𝒊𝒕𝒊𝒗𝒆 𝒇𝒐𝒓 𝑪𝒐𝒗𝒊𝒅-19 𝒊𝒏 𝒑𝒓𝒊𝒔𝒐𝒏."
-
-
         #creating the real fields:
         #start with urls:
         old_ulrs = [url,retweet_url,quote_url,retweet_quoted_url]
@@ -206,7 +191,6 @@ class Parse:
 
     #Punctuation
     def punctuation(text):
-        # if (('?' or '(' or ')' or '[' or ']' or '{' or '}' or "\n" or "\t" or "\'" or imojis or ':' or ';' or '!' or "'") in text):
         text = text.replace('?', ' ')
         text = text.replace('!', ' ')
         text = text.replace('&', ' ')
@@ -231,9 +215,6 @@ class Parse:
 
         listWithoutPunc = text.split(' ')
 
-
-        #this list is not final
-        #punctuationList = [' ','&',';','(',')','[',']','{','}','?','!', '"' , ':'] #ignore them=
 
         for word in listWithoutPunc:
             numIndex = listWithoutPunc.index(word)
@@ -305,7 +286,7 @@ class Parse:
             listWithoutPunc.pop(numIndex)
             listWithoutPunc.insert(numIndex, realWord)
             word = realWord
-            word = word.encode("ascii", "ignore").decode()  # delete all illegal characters like emojis --------AGAIN?
+            word = word.encode("ascii", "ignore").decode()
             listWithoutPunc[numIndex] = word
             if('.' in word or ',' in word or '/' in word or '-' in word):
                 if (word == ',' or word == '.' or word == '/' or word == '-'):
@@ -392,12 +373,12 @@ class Parse:
                 if(wordToken[0] == '@' and len(wordToken) != 1):
                     listOfTokens.insert(wordIndex ,"@")
                     wordIndex += 1
-                    listOfTokens[wordIndex] = wordToken[1:] #should be wordIndex+1 ???????????????????????????????????
+                    listOfTokens[wordIndex] = wordToken[1:]
                     continue
 
                 #dollar
                 if('$' in wordToken):
-                    listOfTokens.insert(wordIndex+1, "dollar") #why +1 ?????????????????????????????????????????????????????
+                    listOfTokens.insert(wordIndex+1, "dollar")
                     if(len(wordToken.replace('$','')) != 0 ): # for case: 2000$
                         listOfTokens[listOfTokens.index(wordToken)] = wordToken.replace('$','')
                         wordToken = wordToken.replace('$', '')
@@ -412,18 +393,12 @@ class Parse:
                     if(wordToken.find("_") != -1):# if there is a '_'
                         wordToken = wordToken[1:] #now: "stay_at_home"
                         #For case: "#Stay_At_Home" and "#stay_at_home"
-                        for partOfToken in wordToken.split('_'):#For case: word.split = ["Stay", "At", "USA"
+                        for partOfToken in wordToken.split('_'):#For case: word.split = ["Stay", "At", "USA"]
 
                             if (len(partOfToken) == 0):
                                 continue
-                            #if(not partOfToken.isdigit() and len(partOfToken) > 1): #For case: Stay
                             if (not partOfToken.isdigit()):  # For case: Stay
-                                #if(partOfToken[1].isupper()):#IF STay -> STAY
-                                 #   finalWord+=partOfToken.upper()
-                                 #  listOfTokens.insert(iIndex, partOfToken)
-                                 #   iIndex+=1
-                                #for case: "#Stay_At_Home" and "#stay_at_home"
-                                #else: # if: Stay -> stay
+
                                  finalWord+=partOfToken.lower()
                                  listOfTokens.insert(iIndex,partOfToken.lower())
                                  iIndex += 1
@@ -480,11 +455,6 @@ class Parse:
                             listOfTokens[thousandIndex - 1] = listOfTokens[thousandIndex-1]+"K"
                             listOfTokens.remove(wordToken)
 
-                        #for case: 123K Thousand
-                        #if listOfTokens[thousandIndex-1][0:len(listOfTokens[thousandIndex-1])-1].isnumeric():
-                        #    if():
-                        #        listOfTokens[thousandIndex - 1] = listOfTokens[thousandIndex-1][0:len(listOfTokens[thousandIndex-1])-1] + "M"
-
                     #for case: Thousand -> 1K
                     else:
                         listOfTokens[thousandIndex] = "1K"
@@ -499,11 +469,6 @@ class Parse:
                             listOfTokens[millionIndex - 1] = listOfTokens[millionIndex-1]+"M"
                             listOfTokens.remove(wordToken)
 
-                        #for case: 123K Thousand
-                        #if listOfTokens[thousandIndex-1][0:len(listOfTokens[thousandIndex-1])-1].isnumeric():
-                        #    if():
-                        #        listOfTokens[thousandIndex - 1] = listOfTokens[thousandIndex-1][0:len(listOfTokens[thousandIndex-1])-1] + "M"
-
                     #for case: Thousand -> 1K
                     else:
                         listOfTokens[millionIndex] = "1M"
@@ -517,11 +482,6 @@ class Parse:
                         if listOfTokens[billionIndex-1].isnumeric():
                             listOfTokens[billionIndex - 1] = listOfTokens[billionIndex-1]+"B"
                             listOfTokens.remove(wordToken)
-
-                        #for case: 123K Thousand
-                        #if listOfTokens[thousandIndex-1][0:len(listOfTokens[thousandIndex-1])-1].isnumeric():
-                        #    if():
-                        #        listOfTokens[thousandIndex - 1] = listOfTokens[thousandIndex-1][0:len(listOfTokens[thousandIndex-1])-1] + "M"
 
                     #for case: Billion -> 1B
                     else:
@@ -591,29 +551,3 @@ class Parse:
         while '' in listOfTokens:
             listOfTokens.remove('')
         return listOfTokens
-
-
-
-def identifyTerms(queryTokens, docTokens): #----------------MOVE TO RANKER--------------------------
-        term = ""
-        termList=[]
-        i = 0
-        j = 0
-        for i in queryTokens[i]:
-            for j in docTokens[j]:
-                if(queryTokens[i] == docTokens[j]):
-                    found = True
-                    l=1
-                    while(found):
-                        if(queryTokens[i+l] == docTokens[j+l]):
-                            term += queryTokens[i] + queryTokens[i+l]
-                            l += 1
-                            i += 1
-                            j += 1
-                        else:
-                            found = False
-                            termList.append(term)
-        return termList
-
-
-

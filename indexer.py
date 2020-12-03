@@ -7,16 +7,7 @@ class Indexer:
 
 
         self.inverted_idx = {}  # self.inverted_idx = [inverted_idx_nums, inverted_idx_ents, inverted_idx_others, inverted_idx_strs]
-        '''
-        the inverted index dictionary is a list of 4 dictionaries:
-        #self.inverted_idx_nums = {}  # (key - term): [num Of docs, freq in corpus, pointer to posting file]
-        #self.inverted_idx_others = {}  # (key - term): [num Of docs, freq in corpus, pointer to posting file]
-        #self.inverted_idx_ents = {}  # (key - term): [num Of docs, freq in corpus, pointer to posting file]
-        #self.inverted_idx_strs = {}  # (key - term): [num Of docs, freq in corpus, pointer to posting file]
-        '''
-
         self.term_max_freq = {}  # (key - DocId):  [MaxFreq, {term:freq}
-
         postingStrsNames = []
         for letter in string.ascii_lowercase:
             postingStrsNames.append("postingStrs_" + letter + "0")
@@ -25,7 +16,6 @@ class Indexer:
 
         self.postingDictNames = ["postingNums","postingOthr", "postingEnts", postingStrsNames] #Names of posting files
         self.currentFileNumber = 0  # which number of file we are
-
 
         self.postingDicts = [{}, {}, {}, [{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}]]  # self.posting_file = [postingDictNums, postingDictOthers, postingDictEnts, postingDictStrs]
         '''
@@ -124,8 +114,7 @@ class Indexer:
 
 
             except:
-                print('problem with the following key {}'.format(term))
-
+                pass
 
         #update: term_max_freq dictiontary
         maxTerms = freq_terms[max(freq_terms.keys())]

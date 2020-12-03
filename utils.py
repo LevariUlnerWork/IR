@@ -23,4 +23,4 @@ def load_obj(name):
         return pickle.load(f)
 
 def load_inverted_index():
-    return load_obj( {} ,"inverted_idx")
+    return load_obj("inverted_idx_finish")
