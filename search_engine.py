@@ -10,7 +10,7 @@ import utils
 import os
 
 
-def run_engine(corpus_path,output_path = "",stemming=True):
+def run_engine(corpus_path,output_path = "",stemming=False):
     """
     :return:
     """
@@ -90,7 +90,7 @@ def load_max_freq():
     inverted_index = utils.load_obj("term_max_freq")
     return inverted_index
 
-def search_and_rank_query(query, inverted_index, term_max_freq, num_docs_to_retrieve, stemming=True, output_path=""):
+def search_and_rank_query(query, inverted_index, term_max_freq, num_docs_to_retrieve, stemming=False, output_path=""):
     thisStemmer = None
     config = ConfigClass()
     loadingPath = output_path + config.saveFilesWithoutStem + "/"
@@ -106,7 +106,7 @@ def search_and_rank_query(query, inverted_index, term_max_freq, num_docs_to_retr
     return searcher.ranker.retrieve_top_k(ranked_docs, num_docs_to_retrieve)
 
 
-def main(corpus_path = "Data/",output_path = "posting",stemming=True,queries = ["What to do"],num_docs_to_retrieve = 2000):
+def main(corpus_path = "Data/",output_path = "posting",stemming=False,queries = ["What to do"],num_docs_to_retrieve = 2000):
     '''
     dict_final_data =  utils.load_inverted_index()
     final_data = {}
