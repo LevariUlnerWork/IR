@@ -155,7 +155,7 @@ def main(corpus_path = "Data/",output_path = "posting",stemming=False,queries = 
             num_docs_to_retrieve=2000
         inverted_index = load_index()
         term_max_freq = load_max_freq()
-        for queryIndex in range(13,len(queries_list)):
+        for queryIndex in range(len(queries_list)):
                 query = queries_list[queryIndex]
                 for doc_tuple in search_and_rank_query(query, inverted_index, term_max_freq, num_docs_to_retrieve, stemming ,output_path):
                     print('tweet id: {}, score (unique common words with query): {}'.format(doc_tuple[1], doc_tuple[0]))
