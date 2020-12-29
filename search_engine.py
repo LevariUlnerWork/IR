@@ -17,8 +17,8 @@ def run_engine(corpus_path,output_path = "",stemming=False):
     number_of_documents = 0
     stemmerLocal = None
     config = ConfigClass()
-    indexer = Indexer()
     savingPath = output_path + config.saveFilesWithoutStem + "/"
+    indexer = Indexer(savingPath)
     if(stemming == True):
         stemmerLocal = stemmer.Stemmer()
         savingPath = output_path + config.saveFilesWithStem + "/"
@@ -46,18 +46,21 @@ def run_engine(corpus_path,output_path = "",stemming=False):
     documents_list = [] #The list of tweets
 
     #Read all files:
-    beforeStopPoints = np.linspace(500000, 10000000, 20)  # set the parts of the files
+    beforeStopPoints = np.linspace(200000, 10000000, 50)  # set the parts of the files
     stopPoints = []
     for point in beforeStopPoints:
         stopPoints.append(int(point))
 
 
-    while i < len(listOfDoc):
+    while i < 1:#len(listOfDoc):
         documents_list = r.read_file(file_name=listOfDoc[i])
         i += 1
 
         # Iterate over every document in the file
         for idx, document in enumerate(documents_list):
+
+            if(number_of_documents == 300):
+                break
 
             # parse the document
             parsed_document = p.parse_doc(document)
@@ -67,18 +70,10 @@ def run_engine(corpus_path,output_path = "",stemming=False):
             if (pdl > 0):
                 indexer.add_new_doc(parsed_document)
             if (number_of_documents in stopPoints):
-                indexer.savePostingFile(savingPath)
+                indexer.changeTweetTermsDict()
 
-    if(number_of_documents not in stopPoints):
-        indexer.savePostingFile(savingPath)
 
-    # # Delete little entities:
-    # for entity in list(indexer.inverted_idx.keys()):
-    #     if (indexer.inverted_idx[0] == 1):
-    #         indexer.inverted_idx.pop(entity)
-
-    utils.save_obj(indexer.inverted_idx, "inverted_idx")
-    utils.save_obj(indexer.term_max_freq, "term_max_freq")
+    indexer.closeIndexer(number_of_documents)
 
 
 
@@ -90,7 +85,7 @@ def load_max_freq():
     inverted_index = utils.load_obj("term_max_freq")
     return inverted_index
 
-def search_and_rank_query(query, inverted_index, term_max_freq, num_docs_to_retrieve, stemming=False, output_path=""):
+def search_and_rank_query(query, inverted_index, num_docs_to_retrieve, stemming=False, output_path=""):
     thisStemmer = None
     config = ConfigClass()
     loadingPath = output_path + config.saveFilesWithoutStem + "/"
@@ -100,7 +95,7 @@ def search_and_rank_query(query, inverted_index, term_max_freq, num_docs_to_retr
 
     p = Parse(stemming=thisStemmer,invIdx=inverted_index)
     query_as_list = p.parse_sentence(query)
-    searcher = Searcher(inverted_index,term_max_freq,loadingPath)
+    searcher = Searcher(inverted_index,loadingPath)
     relevant_docs = searcher.relevant_docs_from_posting(query_as_list)
     ranked_docs = searcher.ranker.rank_relevant_doc(relevant_docs)
     return searcher.ranker.retrieve_top_k(ranked_docs, num_docs_to_retrieve)
@@ -125,12 +120,12 @@ def main(corpus_path = "Data/",output_path = "posting",stemming=False,queries = 
     '''
     if("/" != corpus_path[len(corpus_path)-1]):
         corpus_path += "/"
-    if ("/" != output_path[len(output_path)-1]):
-        output_path += "/"
+    # if ("/" != output_path[len(output_path)-1]):
+    #     output_path += "/"
 
     if(os.path.exists(output_path) == False):
         os.makedirs(output_path)
-
+    #
     run_engine(corpus_path,output_path,stemming)
 
     full_path = open('queries.txt',"r", encoding= 'utf8')
@@ -154,11 +149,12 @@ def main(corpus_path = "Data/",output_path = "posting",stemming=False,queries = 
         if(num_docs_to_retrieve > 2000):
             num_docs_to_retrieve=2000
         inverted_index = load_index()
-        term_max_freq = load_max_freq()
+        # term_max_freq = load_max_freq()
         for queryIndex in range(len(queries_list)):
                 query = queries_list[queryIndex]
-                for doc_tuple in search_and_rank_query(query, inverted_index, term_max_freq, num_docs_to_retrieve, stemming ,output_path):
-                    print('tweet id: {}, score (unique common words with query): {}'.format(doc_tuple[1], doc_tuple[0]))
+                if(query == ""): continue
+                for doc_tuple in search_and_rank_query(query, inverted_index, num_docs_to_retrieve, stemming ,output_path):
+                    print(str(queryIndex) + ' tweet id: {}, score (unique common words with query): {}'.format(doc_tuple[1], doc_tuple[0]))
                     filewriter.writerow([queryIndex, "%s" % (doc_tuple[1]), doc_tuple[0]])
 
 

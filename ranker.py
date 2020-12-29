@@ -1,4 +1,5 @@
 import math
+from operator import itemgetter
 
 class Ranker:
     def __init__(self):
@@ -13,26 +14,8 @@ class Ranker:
         :param relevant_doc: dictionary of documents that contains at least one term from the query.
         :return: sorted list of documents by score
         """
-        # relevant_docs = [ {docID: [{terms in query:[tfIdfTermInDoc, TfIdfTermInQuery] }, sumOfAllTfIdfEveryTermDoc ^2, bonus_score]} , sumOfAllTfIdfEveryTermDoc ^2]
-
-        docRanker = []  # List of COSIM for each doc
-        tfidfAllTermsInQuery = relevant_doc[1]
-
-        for docID in relevant_doc[0].keys():
-            docRank = 0
-            tfidfAllTermsInDoc = relevant_doc[0][docID][1]
-            docIdBonus = relevant_doc[0][docID][2]
-
-            for term in relevant_doc[0][docID][0].keys():
-                tfidfTermInQuery = relevant_doc[0][docID][0][term][1]
-                tfidfTermInDoc = relevant_doc[0][docID][0][term][0]
-                enumerate = tfidfTermInDoc*tfidfTermInQuery
-                denumerator = tfidfAllTermsInDoc*tfidfAllTermsInQuery
-                docRank += enumerate / math.sqrt(denumerator)
-
-            docRanker.append((docRank + docIdBonus, docID)) #tuple(cosSim rank, docID)
-
-        return sorted(docRanker, reverse=True)
+        sorted_relevant_doc = sorted(relevant_doc,key=itemgetter(1), reverse=True)
+        return sorted_relevant_doc
 
     @staticmethod
     def retrieve_top_k(sorted_relevant_doc, k=1):

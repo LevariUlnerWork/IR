@@ -24,79 +24,10 @@ class Parse:
         :param text: Every tweet/query
         :return: list of terms
         """
-        text_tokens = Parse.tokenize_words(text)
+        text_tokens = self.tokenize_words(text)
         text_tokens_without_stopwords = [w for w in text_tokens if w not in self.stop_words]
-
-        #capital and lower letters
-        for wordInx in range(len(text_tokens_without_stopwords)):
-            word = text_tokens_without_stopwords[wordInx]
-            if len(word) > 1 and word[0].isupper() and ' ' not in word and '-' not in word:
-                # for case: Max -> max
-                if (word.lower() in self.invIdx.keys()):
-                    word = word.lower()
-                    text_tokens_without_stopwords[wordInx] = word
-                # for case: Max -> MAX
-                else:
-                    word = word.upper()
-                    text_tokens_without_stopwords[wordInx] = word
-
-        if (self.stemmering != None):
+        if (self.stemmering != None):  # ???
             text_tokens_without_stopwords = self.stemmering.stem_list(text_tokens_without_stopwords)
-
-        #EntityRecognition:
-        text = text.encode("ascii", "ignore").decode()  # delete all illegal characters like emojis
-        text_before_parse = text.split(' ')
-        real_index_word = -1
-        for index_word in range(len(text_before_parse)):
-            real_index_word += 1
-            word = text_before_parse[index_word]
-            if(index_word < real_index_word): #is there index that smaller than 0
-                continue
-            if('"' in word and '"' in text.replace('"','',1)):
-                word=word.replace('"','')
-                next_index = index_word + 1
-                stop = False
-                while(next_index < len(text_before_parse) and stop == False):
-                    next_word = text_before_parse[next_index]
-                    if('"' in next_word):
-                        stop = True
-                        next_word = next_word.replace('"', '')
-                    word += " " + next_word
-                    real_index_word += 1
-                    next_index += 1
-                text_tokens_without_stopwords.insert(index_word, word)
-
-            elif(len(word) > 1 and (word[0].isupper() or '-' in word or '_' in word) and ('.' not in word and  ',' not in word and '?' not in word and '!' not in word and ':' not in word)): #for Max Rossenfield
-                next_index = index_word + 1
-                while (next_index < len(text_before_parse) and len(text_before_parse[next_index]) > 1 and text_before_parse[next_index][0].isupper()):
-                    stopHere = False
-                    next_word = text_before_parse[next_index]
-                    if('.' in next_word or ',' in next_word or '?' in next_word or '!' in next_word or ':' in next_word): #If we should stop
-                        stopHere = True
-                        if('.' in next_word):
-                            next_word = next_word.split('.')[0]
-                        if(',' in next_word):
-                            next_word = next_word.split(',')[0]
-                        if('?' in next_word):
-                            next_word = next_word.split('?')[0]
-                        if('!' in next_word):
-                            next_word = next_word.split('!')[0]
-                        if (':' in next_word):
-                            next_word = next_word.split(':')[0]
-                    else:
-                        next_word = next_word
-
-                    # Donald Trump | "Alexandria Ocasio-Cortez"
-                    word += " " + next_word
-                    real_index_word += 1
-                    next_index += 1
-
-                    if(stopHere == True):
-                        break
-
-                if(' ' in word or '-' in word):
-                    text_tokens_without_stopwords.insert(index_word, word)
-
         return text_tokens_without_stopwords
 
     #this function is used for the tweets
@@ -154,24 +85,23 @@ class Parse:
         full_text, retweet_text, quote_text, retweet_quoted_text = texts_list
 
 
-        try: #trying to parse the text, if it failed - we loose the term of this tweet, but the IR continues
-            tokenized_text = []
-            if("RT" not in full_text):
+        # try: #trying to parse the text, if it failed - we loose the term of this tweet, but the IR continues
+        tokenized_text = []
+        if("RT" not in full_text):
                 tokenized_text = self.parse_sentence(full_text)
-            if(type(retweet_text) == str and len(retweet_text)!= ''):
+        if(type(retweet_text) == str and len(retweet_text)!= ''):
                 tokenized_text += self.parse_sentence(retweet_text)
-            if (type(quote_text) == str and len(quote_text)!= ''):
+        if (type(quote_text) == str and len(quote_text)!= ''):
                 tokenized_text += self.parse_sentence(quote_text)
-            if (type(retweet_quoted_text) == str and len(retweet_quoted_text) != ''):
+        if (type(retweet_quoted_text) == str and len(retweet_quoted_text) != ''):
                 tokenized_text += self.parse_sentence(retweet_quoted_text)
 
-        except:
-            tokenized_text = []
+        # except:
+        #     tokenized_text = []
 
 
         doc_length = len(tokenized_text)  # after text operations.
 
-        #Do Captial letters here
         index= 0
         for term in tokenized_text: #termDict:{key=term:[[indexes],freq]
 
@@ -189,82 +119,115 @@ class Parse:
                             quote_url, term_dict, doc_length)
         return document
 
-    #Punctuation
-    def punctuation(text):
-        text = text.replace('?', ' ')
-        text = text.replace('!', ' ')
-        text = text.replace('&', ' ')
-        text = text.replace(';', ' ')
-        text = text.replace('+', ' ')
-        text = text.replace(':', ' ')
-        text = text.replace('"', ' ')
-        text = text.replace('(', ' ')
-        text = text.replace(')', ' ')
-        text = text.replace('[', ' ')
-        text = text.replace(']', ' ')
-        text = text.replace('{', ' ')
-        text = text.replace('}', ' ')
-        text = text.replace('\n', ' ')
-        text = text.replace('\t', ' ')
-        text = text.replace("//", '')
-        text = text.replace("_", " ")
-        text = text.replace("\'", "'")
-        text = text.replace('"', " ")
+
+    def isfloat(value):
+        try:
+            float(value)
+            return True
+        except ValueError:
+            return False
+
+    def tokenize_words(self, text):
+
+        entityWord = ""
+        entityCounter = 0
+
+        text = text.replace('?', ' ? ')
+        text = text.replace('!', ' ! ')
+        text = text.replace('&', ' & ')
+        text = text.replace(';', ' ; ')
+        text = text.replace('+', ' + ')
+        text = text.replace(':', ' : ')
+        text = text.replace('"', ' " ')
+        text = text.replace('(', ' ( ')
+        text = text.replace(')', ' ) ')
+        text = text.replace('[', ' [ ')
+        text = text.replace(']', ' ] ')
+        text = text.replace('{', ' { ')
+        text = text.replace('}', ' } ')
+        text = text.replace('\n', ' \n ')
+        text = text.replace('\t', ' \t ')
+        text = text.replace("//", ' // ')
+        text = text.replace("_", " _ ")
         text = text.replace("’", "'")
 
+        listOfTokens = text.split(' ')
 
-        listWithoutPunc = text.split(' ')
 
+        finalList = []
+        for wordIndex in range(0,len(listOfTokens)):
 
-        for word in listWithoutPunc:
-            numIndex = listWithoutPunc.index(word)
+            wordToken= listOfTokens[wordIndex]
+            if wordToken == '':
+                continue
+            # check shortcuts
+            shortcutDict = {"ain't": "am not / are not", "aren't": "are not / am not", "can't": "cannot",
+                            "can't've": "cannot have",
+                            "'cause": "because", "could've": "could have", "couldn't": "could not",
+                            "couldn't've": "could not have",
+                            "didn't": "did not", "doesn't": "does not", "don't": "do not", "hadn't": "had not",
+                            "hadn't've": "had not have",
+                            "hasn't": "has not", "haven't": "have not", "he'd": "he had / he would",
+                            "he'd've": "he would have",
+                            "he'll": "he shall / he will", "he'll've": "he shall have / he will have",
+                            "here's": "here is", "he's": "he has / he is",
+                            "how'd": "how did", "how'd'y": "how do you", "how'll": "how will",
+                            "how's": "how has / how is",
+                            "i'd": "I had / I would", "i'd've": "I would have", "i'll": "I shall / I will",
+                            "i'll've": "I shall have / I will have",
+                            "i'm": "I am", "i've": "I have", "isn't": "is not", "it'd": "it had / it would",
+                            "it'd've": "it would have",
+                            "it'll": "it shall / it will", "it'll've": "it shall have / it will have",
+                            "it's": "it has / it is", "let's": "let us",
+                            "ma'am": "madam", "mayn't": "may not", "might've": "might have", "mightn't": "might not",
+                            "mightn't've": "might not have",
+                            "must've": "must have", "mustn't": "must not", "mustn't've": "must not have",
+                            "needn't": "need not", "needn't've": "need not have",
+                            "o'clock": "of the clock", "oughtn't": "ought not", "oughtn't've": "ought not have",
+                            "shan't": "shall not", "sha'n't": "shall not",
+                            "shan't've": "shall not have", "she'd": "she had / she would", "she'd've": "she would have",
+                            "she'll": "she shall / she will",
+                            "she'll've": "she shall have / she will have", "she's": "she has / she is",
+                            "should've": "should have", "shouldn't": "should not",
+                            "shouldn't've": "should not have", "so've": "so have", "so's": "so as / so is",
+                            "that'd": "that would / that had",
+                            "that'd've": "that would have", "that's": "that has / that is",
+                            "there'd": "there had / there would",
+                            "there'd've": "there would have", "there's": "there has / there is",
+                            "they'd": "they had / they would",
+                            "they'd've": "they would have", "they'll": "they shall / they will",
+                            "they'll've": "they shall have / they will have",
+                            "they're": "they are", "they've": "they have", "to've": "to have", "wasn't": "was not",
+                            "we'd": "we had / we would",
+                            "we'd've": "we would have", "we'll": "we will", "we'll've": "we will have",
+                            "we're": "we are", "we've": "we have",
+                            "weren't": "were not", "what'll": "what shall / what will",
+                            "what'll've": "what shall have / what will have",
+                            "what're": "what are", "what's": "what has / what is", "what've": "what have",
+                            "when's": "when has / when is",
+                            "when've": "when have", "where'd": "where did", "where's": "where has / where is",
+                            "where've": "where have",
+                            "who'll": "who shall / who will", "who'll've": "who shall have / who will have",
+                            "who's": "who has / who is",
+                            "who've": "who have", "why's": "why has / why is", "why've": "why have",
+                            "will've": "will have", "won't": "will not",
+                            "won't've": "will not have", "would've": "would have", "wouldn't": "would not",
+                            "wouldn't've": "would not have",
+                            "y'all": "you all", "y'all'd": "you all would", "y'all'd've": "you all would have",
+                            "y'all're": "you all are",
+                            "y'all've": "you all have", "you'd": "you had / you would", "you'd've": "you would have",
+                            "you'll": "you shall / you will",
+                            "you'll've": "you shall have / you will have", "you're": "you are", "you've": "you have"}
 
-            #check shortcuts
-            shortcutDict = {"ain't": "am not / are not","aren't": "are not / am not","can't": "cannot","can't've": "cannot have",
-                             "'cause": "because","could've": "could have","couldn't": "could not","couldn't've": "could not have",
-                             "didn't": "did not","doesn't": "does not","don't": "do not","hadn't": "had not","hadn't've": "had not have",
-                             "hasn't": "has not","haven't": "have not","he'd": "he had / he would","he'd've": "he would have",
-                             "he'll": "he shall / he will","he'll've": "he shall have / he will have","here's":"here is" ,"he's": "he has / he is",
-                             "how'd": "how did","how'd'y": "how do you","how'll": "how will","how's": "how has / how is",
-                             "i'd": "I had / I would","i'd've": "I would have","i'll": "I shall / I will","i'll've": "I shall have / I will have",
-                             "i'm": "I am","i've": "I have","isn't": "is not","it'd": "it had / it would","it'd've": "it would have",
-                             "it'll": "it shall / it will","it'll've": "it shall have / it will have","it's": "it has / it is","let's": "let us",
-                             "ma'am": "madam","mayn't": "may not","might've": "might have","mightn't": "might not","mightn't've": "might not have",
-                             "must've": "must have","mustn't": "must not","mustn't've": "must not have","needn't": "need not","needn't've": "need not have",
-                             "o'clock": "of the clock","oughtn't": "ought not","oughtn't've": "ought not have","shan't": "shall not","sha'n't": "shall not",
-                             "shan't've": "shall not have","she'd": "she had / she would","she'd've": "she would have","she'll": "she shall / she will",
-                             "she'll've": "she shall have / she will have","she's": "she has / she is","should've": "should have","shouldn't": "should not",
-                             "shouldn't've": "should not have","so've": "so have","so's": "so as / so is","that'd": "that would / that had",
-                             "that'd've": "that would have","that's": "that has / that is","there'd": "there had / there would",
-                             "there'd've": "there would have","there's": "there has / there is","they'd": "they had / they would",
-                             "they'd've": "they would have","they'll": "they shall / they will","they'll've": "they shall have / they will have",
-                             "they're": "they are","they've": "they have","to've": "to have","wasn't": "was not","we'd": "we had / we would",
-                             "we'd've": "we would have","we'll": "we will","we'll've": "we will have","we're": "we are","we've": "we have",
-                             "weren't": "were not","what'll": "what shall / what will","what'll've": "what shall have / what will have",
-                             "what're": "what are","what's": "what has / what is","what've": "what have","when's": "when has / when is",
-                             "when've": "when have","where'd": "where did","where's": "where has / where is","where've": "where have",
-                             "who'll": "who shall / who will","who'll've": "who shall have / who will have","who's": "who has / who is",
-                             "who've": "who have","why's": "why has / why is","why've": "why have","will've": "will have","won't": "will not",
-                             "won't've": "will not have","would've": "would have","wouldn't": "would not","wouldn't've": "would not have",
-                             "y'all": "you all","y'all'd": "you all would","y'all'd've": "you all would have","y'all're": "you all are",
-                             "y'all've": "you all have","you'd": "you had / you would","you'd've": "you would have","you'll": "you shall / you will",
-                             "you'll've": "you shall have / you will have","you're": "you are","you've": "you have"}
+            if wordToken.lower() in shortcutDict.keys():
+                i = wordIndex
+                wordToken = shortcutDict[wordToken.lower()]
+                for term in wordToken.split(' '):
+                    if ('/' != term):
+                        finalList.append(term)
+                continue
 
-            if word.lower() in shortcutDict.keys():
-                listWithoutPunc.pop(numIndex)
-                i = numIndex
-                word = shortcutDict[word.lower()]
-                toJump = False
-                for term in word.split(' '):
-                    if('/' != term):
-                        listWithoutPunc.insert(i, term)
-                        word = term
-                        i+=1
-                        toJump = True
-                if(toJump):
-                    continue
-
-            word = word.replace("'", "")
+            wordToken = wordToken.replace("'", "")
 
             #checkPowerScript
             shortscriptDict = {"⁰":"0","¹":"1","²":"2","³":"3","⁴":"4","⁵":"5" ,"⁶":"6","⁷":"7","⁸":"8","⁹":"9",
@@ -274,131 +237,142 @@ class Parse:
                                "ᴱ":"E","ᴳ":"G","ᴴ":"H","ᴵ":"I","ᴶ":"J","ᴷ":"K","ᴸ":"L","ᴹ":"M","ᴺ":"N",
                                "ᴼ":"O","ᴾ":"P","Q":"Q","ᴿ":"R","ᵀ":"T","ᵁ":"U","ⱽ":"V","ᵂ":"W",
                                "⁺":"+","⁻":"-","⁼":"=","⁽":"(","⁾":")"}
+            if(wordToken != wordToken.encode("ascii", "ignore").decode()):
+                listOfPow = list(wordToken)
+                realWord = ""
+                for pow in listOfPow:
+                    if pow in shortscriptDict.keys():
+                        realWord += shortscriptDict[pow]
+                    else:
+                        realWord += pow
 
-            listOfPow = list(word)
-            realWord = ""
-            for pow in listOfPow:
-                if pow in shortscriptDict.keys():
-                   realWord += shortscriptDict[pow]
-                else:
-                    realWord += pow
+                listOfTokens.pop(wordIndex)
+                listOfTokens.insert(wordIndex, realWord)
+                wordToken = realWord
+            wordToken = wordToken.encode("ascii", "ignore").decode()
 
-            listWithoutPunc.pop(numIndex)
-            listWithoutPunc.insert(numIndex, realWord)
-            word = realWord
-            word = word.encode("ascii", "ignore").decode()
-            listWithoutPunc[numIndex] = word
-            if('.' in word or ',' in word or '/' in word or '-' in word):
-                if (word == ',' or word == '.' or word == '/' or word == '-'):
-                    listWithoutPunc.pop(numIndex)
-                    continue
+            if (len(wordToken) > 1 and wordToken[0].isupper() and not wordToken[1].isupper()):
+                entityCounter += 1
+                entityWord += " " +wordToken
+
+            else:
+                if entityCounter > 1:
+                    finalList.append(entityWord)
+                    entityWord = ""
+                    entityCounter = 0
+
+            if(len(listOfTokens) - 1 == wordIndex):
+                if entityCounter > 1:
+                    finalList.append(entityWord)
+                    entityWord = ""
+                    entityCounter = 0
+
+
+
+            if (wordToken == ',' or wordToken == '.' or wordToken == '/' or wordToken == '-' or wordToken == '-' or wordToken == '_' or wordToken == '\t' or wordToken == '\n' \
+                    or wordToken == '//' or wordToken == '}' or wordToken == '{' or wordToken == ']' or wordToken == '[' or wordToken == ')' or wordToken == '(' \
+                    or wordToken == ':' or wordToken == '+' or wordToken == ';' or wordToken == '&' or wordToken == '!' or wordToken == '?' or wordToken == '\n' or wordToken == '"'):
+
+                if entityCounter > 1:
+                    finalList.append(entityWord)
+                    entityWord = ""
+                    entityCounter = 0
+
+                continue
+
+
+            if ('.' in wordToken or ',' in wordToken or '/' in wordToken or '-' in wordToken):
                 for i in [',','.','/','-']:
-                    seperateWordList = word.split(i)
+                    seperateWordList = wordToken.split(i)
                     isNumber = True
                     for inWord in seperateWordList:
                         if not inWord.isdigit():
                             isNumber = False
                     # for case: 13,333
-                    if (isNumber and i == ','):
-                        if (',' in word):
-                            listWithoutPunc[numIndex] = word.replace(',', '')
-                        if ('-' in word): #321-312
-                            wordList = word.split('-')
-                            listWithoutPunc[numIndex] = wordList[0]
+                    if (isNumber and (i == ',' or i == '-')):
+                        if (',' in wordToken and i == ','):
+                            wordToken = wordToken.replace(',', '')
+                        if ('-' in wordToken and i == '-'): #321-312
+                            wordList = wordToken.split('-')
+                            listOfTokens[wordIndex] = wordList[0]
+                            wordToken = wordList[0]
                             for i in range (1,len(wordList)):
-                                listWithoutPunc.insert(numIndex+i, wordList[i])
-                        else: # 123.33 | 213/2312
-                            continue
+                                listOfTokens.insert(wordIndex+i, wordList[i])
+                        # 123.33 | 213/2312 -> continue
 
                     elif (len(seperateWordList) >= 2):
                         # for case: go. | go,
                         if(len(seperateWordList[1]) == 0):
-                            if (',' in word and i == ','):
-                                word = word.replace(',', '')
-                            if ('.' in word and i == '.'):
-                                word = word.replace('.', '')
-                            if ('/' in word and i == '/'):
-                                word = word.replace('/', '')
-                            if ('-' in word and i == '-'):
-                                word = word.replace('-', '')
-                            listWithoutPunc[numIndex] = word
+                            if (',' in wordToken and i == ','):
+                                wordToken = wordToken.replace(',', '')
+                            if ('.' in wordToken and i == '.'):
+                                wordToken = wordToken.replace('.', '')
+                            if ('/' in wordToken and i == '/'):
+                                wordToken = wordToken.replace('/', '')
+                            if ('-' in wordToken and i == '-'):
+                                wordToken = wordToken.replace('-', '')
+                            listOfTokens[wordIndex] = wordToken
                         else:
-                            if (i=='.' and '/' in word and '.' in word):
-                                continue
+                            if (i == '-'): # save Calvert-Lewine as it is
+                                listOfTokens[wordIndex] = seperateWordList[0]
+                                wordToken = seperateWordList[0]
+                                for i in range(1, len(seperateWordList)):
+                                    listOfTokens.insert(wordIndex + i, seperateWordList[i])
+                            elif not (i=='.' and '/' in wordToken and '.' in wordToken): # To handle addresses correctly
                             # for case: "His/Her | his,her"
-                            listWithoutPunc.pop(numIndex)
-                            place = numIndex
-                            for w in seperateWordList:
-                                if("www" in w):
-                                    listWithoutPunc.insert(place, "www")
-                                    w = w[4:]
-                                    place += 1
-                                listWithoutPunc.insert(place,w)
-                                place+=1
-                            word = listWithoutPunc[numIndex]
+                                listOfTokens.pop(wordIndex)
+                                place = wordIndex
+                                for w in seperateWordList:
+                                    if("www" in w):
+                                        listOfTokens.insert(place, "www")
+                                        w = w[4:]
+                                        place += 1
+                                    listOfTokens.insert(place,w)
+                                    place+=1
+                                wordToken = listOfTokens[wordIndex]
                     else:
-                        if (',' in word and i == ','):
-                            word = word.replace(',', '')
-                            listWithoutPunc[numIndex] = word
-                        if ('.' in word and i == '.'):
-                            word = word.replace('.', '')
-                            listWithoutPunc[numIndex] = word
-                        if ('/' in word and i == '/'):
-                            word = word.replace('/', '')
-                            listWithoutPunc[numIndex] = word
-                        if ('-' in word and i == '-'):
-                            word = word.replace('-', '')
-                            listWithoutPunc[numIndex] = word
-                        else:
-                            continue
-        return listWithoutPunc
+                        if (',' in wordToken and i == ','):
+                            wordToken = wordToken.replace(',', '')
+                            listOfTokens[wordIndex] = wordToken
+                        if ('.' in wordToken and i == '.'):
+                            wordToken = wordToken.replace('.', '')
+                            listOfTokens[wordIndex] = wordToken
+                        if ('/' in wordToken and i == '/'):
+                            wordToken = wordToken.replace('/', '')
+                            listOfTokens[wordIndex] = wordToken
+                        if ('-' in wordToken and i == '-'):
+                            wordToken = wordToken.replace('-', '')
+                            listOfTokens[wordIndex] = wordToken
 
-    def isfloat(value):
-        try:
-            float(value)
-            return True
-        except ValueError:
-            return False
-
-    def tokenize_words(text):
-        listOfTokens = Parse.punctuation(text)
-
-        for wordIndex in range(0,len(listOfTokens)):
-
-            wordToken= listOfTokens[wordIndex]
 
             if(len(wordToken) > 0):
 
                 #tags
                 if(wordToken[0] == '@' and len(wordToken) != 1):
-                    listOfTokens.insert(wordIndex ,"@")
-                    wordIndex += 1
-                    listOfTokens[wordIndex] = wordToken[1:]
+                    finalList.append("@")
+                    finalList.append(wordToken[1:])
                     continue
 
                 #dollar
                 if('$' in wordToken):
-                    listOfTokens.insert(wordIndex+1, "dollar")
+                    finalList.append("dollar")
                     if(len(wordToken.replace('$','')) != 0 ): # for case: 2000$
-                        listOfTokens[listOfTokens.index(wordToken)] = wordToken.replace('$','')
                         wordToken = wordToken.replace('$', '')
                     else: # for case: $$
-                        listOfTokens.remove(wordToken)
                         continue
 
                 #Hashtags
                 if (wordToken[0] == '#' and not wordToken[1:].isdigit()):
                     iIndex = wordIndex + 1
+                    finalList.append('#')
                     finalWord = "#"  # Final Word: "#stayathome"
                     if(wordToken.find("_") != -1):# if there is a '_'
                         wordToken = wordToken[1:] #now: "stay_at_home"
                         #For case: "#Stay_At_Home" and "#stay_at_home"
                         for partOfToken in wordToken.split('_'):#For case: word.split = ["Stay", "At", "USA"]
-
                             if (len(partOfToken) == 0):
                                 continue
                             if (not partOfToken.isdigit()):  # For case: Stay
-
                                  finalWord+=partOfToken.lower()
                                  listOfTokens.insert(iIndex,partOfToken.lower())
                                  iIndex += 1
@@ -408,7 +382,7 @@ class Parse:
                                 listOfTokens.insert(iIndex, partOfToken)
                                 iIndex += 1
 
-                        listOfTokens[wordIndex] = finalWord #Now we changed: "#stay_at_home" to "#stayathome"
+                        wordToken = finalWord #Now we changed: "#stay_at_home" to "#stayathome"
 
                     else:
                         #For case: "#StayAtHome"
@@ -437,60 +411,58 @@ class Parse:
                             finalWord+=j
                             listOfTokens.insert(iIndex, j)
                             iIndex+=1
-                    listOfTokens[wordIndex] = finalWord
+                    wordToken = finalWord
 
                 #for case: 10.6 precent
                 if(wordToken == "precent" or wordToken == "precentage"):
                     if(wordIndex != 0):
-                        listOfTokens[wordIndex-1] += "%"
-                        listOfTokens.pop[wordIndex]
+                        finalList[wordIndex-1] += "%"
+                        continue
 
                 #for case: 123 Thousand
                 if(wordToken == "Thousand" or wordToken == "thousand" or wordToken == "Thousands" or wordToken == "thousands"):
-                    thousandIndex = listOfTokens.index(wordToken)
+                    thousandIndex = len(finalList)
                     if(thousandIndex!=0):
 
                         #for case: 123 Thousand (1-999)
-                        if listOfTokens[thousandIndex-1].isnumeric():
-                            listOfTokens[thousandIndex - 1] = listOfTokens[thousandIndex-1]+"K"
-                            listOfTokens.remove(wordToken)
+                        if Parse.isfloat(finalList[thousandIndex-1]):
+                            finalList[thousandIndex - 1] = finalList[thousandIndex-1]+"K"
+                            continue
 
                     #for case: Thousand -> 1K
                     else:
-                        listOfTokens[thousandIndex] = "1K"
+                        finalList.append("1K")
+                        continue
 
                 #for case: 123 Million
                 if(wordToken == "Million" or wordToken == "million" or wordToken == "Millions" or wordToken == "millions"):
-                    millionIndex = listOfTokens.index(wordToken)
-                    if(millionIndex!=0):
-
-                        #for case: 123 Thousand (1-999)
-                        if listOfTokens[millionIndex-1].isnumeric():
-                            listOfTokens[millionIndex - 1] = listOfTokens[millionIndex-1]+"M"
-                            listOfTokens.remove(wordToken)
+                    millionIndex = len(finalList)
+                    # for case: 123 Thousand (1-999)
+                    if(millionIndex>0 and Parse.isfloat(finalList[millionIndex-1])):
+                        finalList[millionIndex - 1] = finalList[millionIndex-1]+"M"
+                        continue
 
                     #for case: Thousand -> 1K
                     else:
-                        listOfTokens[millionIndex] = "1M"
+                        finalList.append("1M")
+                        continue
 
                 #for case: 123 Billion
                 if(wordToken == "Billion" or wordToken == "billion" or wordToken == "Billions" or wordToken == "billions"):
-                    billionIndex = listOfTokens.index(wordToken)
-                    if(billionIndex!=0):
-
-                        #for case: 123 Billion (1-999)
-                        if listOfTokens[billionIndex-1].isnumeric():
-                            listOfTokens[billionIndex - 1] = listOfTokens[billionIndex-1]+"B"
-                            listOfTokens.remove(wordToken)
-
+                    billionIndex = len(finalList)
+                    # for case: 123 Billion (1-999)
+                    if(billionIndex!=0 and Parse.isfloat(finalList[billionIndex-1])):
+                        finalList[billionIndex - 1] = finalList[billionIndex-1]+"B"
+                        continue
                     #for case: Billion -> 1B
                     else:
-                        listOfTokens[billionIndex] = "1B"
+                        finalList.append("1B")
+                        continue
 
                 # for case: Numbers
                 if (Parse.isfloat(wordToken.replace('.', '', 1))): # if the word is like "inf" or "infinity" it would false positivily think it is a number
                     wordTokenNumber = float(wordToken)
-                    if(wordTokenNumber > 1000000000000):
+                    if(wordTokenNumber > 1000000000000): # we aren't save Tweet ID as a token, cause no one would search for them
                         continue
                     # if there are more than 3 digit before the point
                     numberOfLoops = 0
@@ -511,17 +483,19 @@ class Parse:
                     if (numberOfLoops == 3):
                         varInt = "B"
 
-                    listOfTokens[wordIndex] = "%.3f" % round(wordTokenNumber, 3) + varInt
+                    finalList.append("%.3f" % round(wordTokenNumber, 3) + varInt)
+                    continue
 
                 #for case: 6 3/4 and date
                 if("/" in wordToken):
                     #for case: 6 3/4
-                    if(listOfTokens[wordIndex-1].isdigit()):
-                        listOfTokens[wordIndex-1] += " " + wordToken
-                        listOfTokens.pop(wordIndex)
+                    if(finalList[len(finalList)-1].isdigit()):
+                        finalList[len(finalList)-1] += " " + wordToken
+                        continue
                     else: #3/4 -> 3th at April
                         dateNum = wordToken.split('/')
                         if(len(dateNum)>3 or int(dateNum[0]) > 31 or int(dateNum[1]) > 31 or (int(dateNum[0]) > 12 and int(dateNum[1]) > 12)):
+                            finalList.append(wordToken)
                             continue
                         if(int(dateNum[1]) > 12):
                             day = dateNum[1]
@@ -537,17 +511,28 @@ class Parse:
                             day += "rd"
                         else:
                             day += "th"
-                        listOfTokens[wordIndex] = day
-                        wordIndex+=1
-                        listOfTokens.insert(wordIndex, month)
-                        wordToken = month
+                        finalList.append(day)
+                        finalList.append(month)
                         if(len(dateNum) == 3):
                             year = dateNum[2]
-                            wordIndex += 1
-                            listOfTokens.insert(wordIndex,year)
-                            wordToken = year
+                            finalList.append(year)
+                        continue
+
+                #Capital letters:
+                if len(wordToken) > 1 and wordToken[0].isupper() and ' ' not in wordToken and '-' not in wordToken:
+                    # for case: Max -> max
+                    if (wordToken.lower() in self.invIdx.keys()):
+                        wordToken = wordToken.lower()
+                        finalList.append(wordToken)
+                    # for case: Max -> MAX
+                    else:
+                        wordToken = wordToken.upper()
+                        finalList.append(wordToken)
+                else:
+                    finalList.append(wordToken)
 
 
-        while '' in listOfTokens:
-            listOfTokens.remove('')
-        return listOfTokens
+                #index it:
+        # while '' in listOfTokens:
+        #     finalList.remove('')
+        return finalList

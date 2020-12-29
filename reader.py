@@ -15,3 +15,16 @@ class ReadFile:
         full_path = os.path.join(self.corpus_path, file_name)
         df = pd.read_parquet(full_path, engine="pyarrow")
         return df.values.tolist()
+
+    @staticmethod
+    def crawler(corpus_path):
+        # find every parquet file in the folder or sub folder
+        result = [os.path.join(dp, f) for dp, dn, filenames in os.walk(corpus_path) for f in filenames if
+                  os.path.splitext(f)[1] == '.parquet']
+        for i, res in enumerate(result):
+            result[i] = os.path.relpath(res, corpus_path)
+
+        # result = [os.path.join(dp, f) for dp, dn, filenames in os.walk(corpus_path) for f in filenames if
+        #           os.path.splitext(f)[1] == '.parquet']
+        # print(result)
+        return result
