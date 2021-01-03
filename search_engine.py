@@ -8,7 +8,7 @@ from indexer import Indexer
 from searcher import Searcher
 import utils
 import os
-
+import time
 
 def run_engine(corpus_path,output_path = "",stemming=False):
     """
@@ -52,15 +52,15 @@ def run_engine(corpus_path,output_path = "",stemming=False):
         stopPoints.append(int(point))
 
 
-    while i < 1:#len(listOfDoc):
+    while i < len(listOfDoc):
         documents_list = r.read_file(file_name=listOfDoc[i])
         i += 1
 
         # Iterate over every document in the file
         for idx, document in enumerate(documents_list):
 
-            if(number_of_documents == 300):
-                break
+            # if(number_of_documents == 300):
+            #     break
 
             # parse the document
             parsed_document = p.parse_doc(document)
@@ -123,11 +123,14 @@ def main(corpus_path = "Data/",output_path = "posting",stemming=False,queries = 
     # if ("/" != output_path[len(output_path)-1]):
     #     output_path += "/"
 
+
     if(os.path.exists(output_path) == False):
         os.makedirs(output_path)
     #
-    run_engine(corpus_path,output_path,stemming)
 
+    start_engine_time = time.time()
+    run_engine(corpus_path,output_path,stemming)
+    end_engine_time = time.time()
     full_path = open('queries.txt',"r", encoding= 'utf8')
     queries_list = full_path.read().split("\n")
 
@@ -150,12 +153,20 @@ def main(corpus_path = "Data/",output_path = "posting",stemming=False,queries = 
             num_docs_to_retrieve=2000
         inverted_index = load_index()
         # term_max_freq = load_max_freq()
+        start_query_time = time.time()
         for queryIndex in range(len(queries_list)):
-                query = queries_list[queryIndex]
-                if(query == ""): continue
-                for doc_tuple in search_and_rank_query(query, inverted_index, num_docs_to_retrieve, stemming ,output_path):
-                    print(str(queryIndex) + ' tweet id: {}, score (unique common words with query): {}'.format(doc_tuple[1], doc_tuple[0]))
-                    filewriter.writerow([queryIndex, "%s" % (doc_tuple[1]), doc_tuple[0]])
+            query = queries_list[queryIndex]
+            if(query == ""): continue
+            for doc_tuple in search_and_rank_query(query, inverted_index, num_docs_to_retrieve, stemming ,output_path):
+                print(str(queryIndex) + ' tweet id: {}, score (unique common words with query): {}'.format(doc_tuple[1], doc_tuple[0]))
+                filewriter.writerow([queryIndex, "%s" % (doc_tuple[1]), doc_tuple[0]])
+        end_query_time = time.time()
+
+    timeFile = open("runtime.txt","w", encoding= 'utf8')
+    timeFile.write("start engine: " + str(start_engine_time))
+    timeFile.write("end engine: " + str(end_engine_time))
+    timeFile.write("start query: " + str(start_query_time))
+    timeFile.write("end engine: " + str(end_query_time))
 
 
 
