@@ -46,7 +46,7 @@ def run_engine(corpus_path,output_path = "",stemming=False):
     documents_list = [] #The list of tweets
 
     #Read all files:
-    beforeStopPoints = np.linspace(200000, 10000000, 50)  # set the parts of the files
+    beforeStopPoints = np.linspace(100000, 10000000, 100)  # set the parts of the files
     stopPoints = []
     for point in beforeStopPoints:
         stopPoints.append(int(point))
