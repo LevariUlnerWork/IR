@@ -17,15 +17,13 @@ class Indexer:
         for letter in string.ascii_lowercase:
             letters.append(letter)
 
-        self.postinpFiles = {}
-
         for letter in letters:
-            self.postinpFiles["posting_" + letter] = {}
+            utils.save_obj({}, savingPath + "posting_" + letter)
             for letter2 in letters:
-                self.postinpFiles["posting_" + letter + letter2] = {}
+                utils.save_obj({}, savingPath + "posting_" + letter + letter2)
 
         self.letters = letters
-        self.postinpFiles["postingOthers"] = {}
+        utils.save_obj({}, savingPath + "postingOthers")
         self.savingPath = savingPath
         '''
         the posting files is built in this way:
@@ -45,6 +43,7 @@ class Indexer:
         document_dictionary = document.term_doc_dictionary # document_dictionary = {term:[[indexes],freq]
         self.tweetTerms [docID] = list(document_dictionary.keys())
         freq_max = sorted(list(document_dictionary.values()),key=itemgetter(1),reverse=True) [0][1] #Gets the maxFreq
+        postingFile = {}
         postingFileName = ""
         # listOfUniques = [] #list of unique terms
         tfSquareSum = 0
@@ -72,31 +71,38 @@ class Indexer:
 
                 if (type == 1):
                     if(postingFileName != "postingOthers"):
+                        utils.save_obj(postingFile, self.savingPath + postingFileName)
                         postingFileName = "postingOthers"
+                        postingFile = utils.load_obj(self.savingPath + postingFileName)
 
                 elif(len(term)==1):
                     if postingFileName != "posting_" + term.lower():
+                        utils.save_obj(postingFile, self.savingPath + postingFileName)
                         postingFileName = "posting_" + term.lower()
+                        postingFile = utils.load_obj(self.savingPath + postingFileName)
                 else:
                     if postingFileName !="posting_" + str(term[0]).lower() + str(term[1]).lower():
+                        utils.save_obj(postingFile, self.savingPath + postingFileName)
                         postingFileName = "posting_" + term[0].lower() + term[1].lower()
+                        postingFile = utils.load_obj(self.savingPath + postingFileName)
 # this line
+
                 indexes_t = document_dictionary[term][0]
                 freq_t = document_dictionary[term][1]
                 tf = freq_t / freq_max
 
                 if term not in self.inverted_idx.keys():
-                    self.postinpFiles[postingFileName][term] = []
-                    self.postinpFiles[postingFileName][term].append([freq_t, docID, indexes_t,tf])
+                    postingFile[term] = []
+                    postingFile[term].append([freq_t, docID, indexes_t,tf])
                     self.inverted_idx[term] = [1, freq_t, postingFileName]
 
                 else:
                     #update inv_dict:
                     self.inverted_idx[term][0] += 1 # add another doc to the count in the inv_dict
                     self.inverted_idx[term][1] += freq_t
-                    self.postinpFiles[postingFileName][term].append([freq_t, docID, indexes_t,tf])
+                    postingFile[term].append([freq_t, docID, indexes_t,tf])
 
-
+        utils.save_obj(postingFile, self.savingPath + postingFileName)
 
 
 
@@ -109,7 +115,6 @@ class Indexer:
         utils.save_obj(self.tweetTerms, self.savingPath + "TweetTerm_%s" % (self.counterOfTweetTermsFiles))
         self.computeTfIdf(numberOfTweets)
         self.deleteSingleEntities()
-        utils.save_obj(self.postinpFiles, self.savingPath + "postingFiles")
         utils.save_obj(self.inverted_idx, "inverted_idx")
 
     def computeTfIdf(self, numberOfTweets):
@@ -122,6 +127,7 @@ class Indexer:
                 docSensorPerTerm = {}
                 tfIdfThisTweet = {}
                 for term in sorted(tweetsFile[tweet]):
+
 
                     #First - get the posting file
                     if (str(term[0]).lower() not in self.letters):  # others
@@ -137,18 +143,22 @@ class Indexer:
                     sopposedPostingName = ""
 
                     if(type == 1):
-                        postingFileName = "postingOthers"
+                        sopposedPostingName = "postingOthers"
                     elif len(term) == 1:
-                            postingFileName = "posting_" + term.lower()
+                            sopposedPostingName = "posting_" + term.lower()
                     else:
-                        postingFileName = "posting_" + str(term[0]).lower() + str(term[1]).lower()
+                        sopposedPostingName = "posting_" + str(term[0]).lower() + str(term[1]).lower()
 
+                    if(postingFileName != sopposedPostingName):
+                        utils.save_obj(postingFile, self.savingPath + postingFileName)
+                        postingFileName = sopposedPostingName
+                        postingFile = utils.load_obj(self.savingPath + postingFileName)
 
                     tf = 1
 
-                    for docData in range (len(self.postinpFiles[postingFileName][term])):
-                        if self.postinpFiles[postingFileName][term][docData][1] == tweet:
-                            tf = self.postinpFiles[postingFileName][term][docData][3]
+                    for docData in range (len(postingFile[term])):
+                        if postingFile[term][docData][1] == tweet:
+                            tf = postingFile[term][docData][3]
                             docSensorPerTerm[term] = docData
                             break
                     idf_Term = math.log2(numberOfTweets / self.inverted_idx[term][0])
@@ -156,6 +166,7 @@ class Indexer:
 
                 tfIdfThisTweetPowList = [math.pow(x,2) for x in tfIdfThisTweet.values()]
                 denominator = math.sqrt(sum(tfIdfThisTweetPowList))
+
                 for term in sorted(tweetsFile[tweet]):
                     #First - get the posting file
                     if (str(term[0]).lower() not in self.letters):  # others
@@ -168,17 +179,23 @@ class Indexer:
                     else:  # strings
                         type = 2
 
+                    sopposedPostingName = ""
 
                     if (type == 1):
-                        postingFileName = "postingOthers"
+                        sopposedPostingName = "postingOthers"
                     elif len(term) == 1:
-                        postingFileName = "posting_" + term.lower()
+                        sopposedPostingName = "posting_" + term.lower()
                     else:
-                        postingFileName = "posting_" + str(term[0]).lower() + str(term[1]).lower()
+                        sopposedPostingName = "posting_" + str(term[0]).lower() + str(term[1]).lower()
 
-                    enumerate = tfIdfThisTweet[term]
-                    self.postinpFiles[postingFileName][term][docSensorPerTerm[term]][3] = enumerate / denominator #Cossim of the term in this tweet
+                    if (postingFileName != sopposedPostingName):
+                        utils.save_obj(postingFile, self.savingPath + postingFileName)
+                        postingFileName = sopposedPostingName
+                        postingFile = utils.load_obj(self.savingPath + postingFileName)
+
+                    postingFile[term][docSensorPerTerm[term]][3] = tfIdfThisTweet[term] / denominator #Cossim of the term in this tweet
             counterTweetsFiles -= 1
+        utils.save_obj(postingFile, self.savingPath + postingFileName)
 
 
     def deleteSingleEntities(self):

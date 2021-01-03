@@ -101,7 +101,7 @@ def search_and_rank_query(query, inverted_index, num_docs_to_retrieve, stemming=
     return searcher.ranker.retrieve_top_k(ranked_docs, num_docs_to_retrieve)
 
 
-def main(corpus_path = "Data/",output_path = "posting",stemming=False,queries = ["What to do"],num_docs_to_retrieve = 2000):
+def main(corpus_path = "Data2/",output_path = "posting",stemming=False,queries = ["What to do"],num_docs_to_retrieve = 2000):
     '''
     dict_final_data =  utils.load_inverted_index()
     final_data = {}
@@ -130,7 +130,7 @@ def main(corpus_path = "Data/",output_path = "posting",stemming=False,queries = 
 
     start_engine_time = time.time()
     run_engine(corpus_path,output_path,stemming)
-    end_engine_time = time.time()
+    end_engine_time = time.time() - start_engine_time
     full_path = open('queries.txt',"r", encoding= 'utf8')
     queries_list = full_path.read().split("\n")
 
@@ -160,13 +160,11 @@ def main(corpus_path = "Data/",output_path = "posting",stemming=False,queries = 
             for doc_tuple in search_and_rank_query(query, inverted_index, num_docs_to_retrieve, stemming ,output_path):
                 print(str(queryIndex) + ' tweet id: {}, score (unique common words with query): {}'.format(doc_tuple[1], doc_tuple[0]))
                 filewriter.writerow([queryIndex, "%s" % (doc_tuple[1]), doc_tuple[0]])
-        end_query_time = time.time()
+        end_query_time = time.time() - start_query_time
 
     timeFile = open("runtime.txt","w", encoding= 'utf8')
-    timeFile.write("start engine: " + str(start_engine_time))
-    timeFile.write("end engine: " + str(end_engine_time))
-    timeFile.write("start query: " + str(start_query_time))
-    timeFile.write("end engine: " + str(end_query_time))
+    timeFile.write("engine time: " + str(end_engine_time))
+    timeFile.write("query time: " + str(end_query_time))
 
 
 
