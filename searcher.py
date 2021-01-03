@@ -7,13 +7,14 @@ import math
 
 class Searcher:
 
-    def __init__(self, inverted_index, loadingPath):
+    def __init__(self, inverted_index, loadingPath, posting_files):
         """
         :param inverted_index: dictionary of inverted index
         """
         self.parser = Parse()
         self.ranker = Ranker()
         self.inverted_index = inverted_index
+        self.posting_files = posting_files
         # self.term_max_freq = term_max_freq
         self.loadingPath = loadingPath
 
@@ -45,7 +46,6 @@ class Searcher:
             query_dict[term] = query_tf[term] / denominator
 
         postingFileName = ""
-        postingFile = {}
 
         relevant_docs = []  #relevant_docs = [(tweetId, rank)]
         query_terms = sorted(list(query_dict.keys()))
@@ -54,11 +54,9 @@ class Searcher:
                     continue
 
                 postingName = self.inverted_index[term][2]
-                if postingName != postingFileName:
-                    postingFileName = postingName
-                    postingFile = utils.load_obj(self.loadingPath + postingName)
-
-                for tweetData in postingFile[term]:
+                posfile = self.posting_files[postingFileName]
+                inv_dic = self.inverted_index[term]
+                for tweetData in self.posting_files[postingFileName][term]:
                     doc_id = tweetData[1]
                     tfidf = tweetData[3] * query_dict[term]
                     relevant_docs.append((doc_id,tfidf))

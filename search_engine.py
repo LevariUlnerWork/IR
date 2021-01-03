@@ -80,12 +80,12 @@ def run_engine(corpus_path,output_path = "",stemming=False):
 def load_index():
     inverted_index = utils.load_obj("inverted_idx")
     return inverted_index
+def load_posting():
+    posting = utils.load_obj("postingFiles")
+    return posting
 
-def load_max_freq():
-    inverted_index = utils.load_obj("term_max_freq")
-    return inverted_index
 
-def search_and_rank_query(query, inverted_index, num_docs_to_retrieve, stemming=False, output_path=""):
+def search_and_rank_query(query, inverted_index, posting_files , num_docs_to_retrieve, stemming=False, output_path=""):
     thisStemmer = None
     config = ConfigClass()
     loadingPath = output_path + config.saveFilesWithoutStem + "/"
@@ -95,7 +95,7 @@ def search_and_rank_query(query, inverted_index, num_docs_to_retrieve, stemming=
 
     p = Parse(stemming=thisStemmer,invIdx=inverted_index)
     query_as_list = p.parse_sentence(query)
-    searcher = Searcher(inverted_index,loadingPath)
+    searcher = Searcher(inverted_index,loadingPath, posting_files)
     relevant_docs = searcher.relevant_docs_from_posting(query_as_list)
     ranked_docs = searcher.ranker.rank_relevant_doc(relevant_docs)
     return searcher.ranker.retrieve_top_k(ranked_docs, num_docs_to_retrieve)
@@ -129,8 +129,11 @@ def main(corpus_path = "Data2/",output_path = "posting",stemming=False,queries =
     #
 
     start_engine_time = time.time()
+
     run_engine(corpus_path,output_path,stemming)
+
     end_engine_time = time.time() - start_engine_time
+
     full_path = open('queries.txt',"r", encoding= 'utf8')
     queries_list = full_path.read().split("\n")
 
@@ -152,12 +155,13 @@ def main(corpus_path = "Data2/",output_path = "posting",stemming=False,queries =
         if(num_docs_to_retrieve > 2000):
             num_docs_to_retrieve=2000
         inverted_index = load_index()
+        posting = load_posting()
         # term_max_freq = load_max_freq()
         start_query_time = time.time()
         for queryIndex in range(len(queries_list)):
             query = queries_list[queryIndex]
             if(query == ""): continue
-            for doc_tuple in search_and_rank_query(query, inverted_index, num_docs_to_retrieve, stemming ,output_path):
+            for doc_tuple in search_and_rank_query(query, inverted_index, posting, num_docs_to_retrieve, stemming ,output_path):
                 print(str(queryIndex) + ' tweet id: {}, score (unique common words with query): {}'.format(doc_tuple[1], doc_tuple[0]))
                 filewriter.writerow([queryIndex, "%s" % (doc_tuple[1]), doc_tuple[0]])
         end_query_time = time.time() - start_query_time

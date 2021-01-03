@@ -10,22 +10,22 @@ class Indexer:
 
         self.inverted_idx = {}  # self.inverted_idx = [inverted_idx_nums, inverted_idx_ents, inverted_idx_others, inverted_idx_strs]
         self.alone_entities_dict = []
-        self.tweetTerms = {}
+        self.tweetTerms = {} #{TweetId:list of terms}
         self.counterOfTweetTermsFiles = 0
 
-        letters = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+        letters = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]#letters = [a,b,c....0,1...9]
         for letter in string.ascii_lowercase:
             letters.append(letter)
 
-        self.postinpFiles = {}
+        self.postingFiles = {}
 
         for letter in letters:
-            self.postinpFiles["posting_" + letter] = {}
+            self.postingFiles["posting_" + letter] = {}
             for letter2 in letters:
-                self.postinpFiles["posting_" + letter + letter2] = {}
+                self.postingFiles["posting_" + letter + letter2] = {}
 
         self.letters = letters
-        self.postinpFiles["postingOthers"] = {}
+        self.postingFiles["postingOthers"] = {}
         self.savingPath = savingPath
         '''
         the posting files is built in this way:
@@ -42,13 +42,11 @@ class Indexer:
         """
 
         docID = document.tweet_id
-        document_dictionary = document.term_doc_dictionary # document_dictionary = {term:[[indexes],freq]
-        self.tweetTerms [docID] = list(document_dictionary.keys())
+        document_dictionary = document.term_doc_dictionary # document_dictionary = {term:[[indexes],freq]}
+        self.tweetTerms[docID] = list(document_dictionary.keys())
         freq_max = sorted(list(document_dictionary.values()),key=itemgetter(1),reverse=True) [0][1] #Gets the maxFreq
         postingFileName = ""
-        # listOfUniques = [] #list of unique terms
-        tfSquareSum = 0
-        # self.term_max_freq[docID] = [0,{}]
+
         # Go over each term in the doc
         for term in sorted(list(document_dictionary.keys())):
 
@@ -56,8 +54,8 @@ class Indexer:
                 #Deciding the type of the term
                 if (str(term[0]).lower() not in self.letters):  #others
                     type = 1
-                elif(len(term) > 1):
-                    if str(term[1]).lower() not in self.letters:
+                elif(len(term) > 1): # 'J'
+                    if str(term[1]).lower() not in self.letters: #1400 -> 1.400K
                         type = 1
                     else:  # strings
                         type = 2
@@ -65,7 +63,7 @@ class Indexer:
                     type = 2
 
                 if (' ' in term): #alone entities
-                    if term in self.alone_entities_dict:
+                    if term in self.alone_entities_dict: #fix it
                         self.alone_entities_dict.remove(term)
                     else:
                         self.alone_entities_dict.append(term)
@@ -86,15 +84,15 @@ class Indexer:
                 tf = freq_t / freq_max
 
                 if term not in self.inverted_idx.keys():
-                    self.postinpFiles[postingFileName][term] = []
-                    self.postinpFiles[postingFileName][term].append([freq_t, docID, indexes_t,tf])
+                    self.postingFiles[postingFileName][term] = []
+                    self.postingFiles[postingFileName][term].append([freq_t, docID, indexes_t,tf])
                     self.inverted_idx[term] = [1, freq_t, postingFileName]
 
                 else:
                     #update inv_dict:
                     self.inverted_idx[term][0] += 1 # add another doc to the count in the inv_dict
                     self.inverted_idx[term][1] += freq_t
-                    self.postinpFiles[postingFileName][term].append([freq_t, docID, indexes_t,tf])
+                    self.postingFiles[postingFileName][term].append([freq_t, docID, indexes_t,tf])
 
 
 
@@ -109,7 +107,7 @@ class Indexer:
         utils.save_obj(self.tweetTerms, self.savingPath + "TweetTerm_%s" % (self.counterOfTweetTermsFiles))
         self.computeTfIdf(numberOfTweets)
         self.deleteSingleEntities()
-        utils.save_obj(self.postinpFiles, self.savingPath + "postingFiles")
+        utils.save_obj(self.postinpFiles, "postingFiles")
         utils.save_obj(self.inverted_idx, "inverted_idx")
 
     def computeTfIdf(self, numberOfTweets):
@@ -145,16 +143,18 @@ class Indexer:
 
 
                     tf = 1
-
-                    for docData in range (len(self.postinpFiles[postingFileName][term])):
-                        if self.postinpFiles[postingFileName][term][docData][1] == tweet:
-                            tf = self.postinpFiles[postingFileName][term][docData][3]
+                    #docID = 1
+                    #Posting = {word:[[docID:13][][][docID:1]]   tinkle:[[][docID:1][][]]] }
+                    #sensor = {word:3, tinkle:1}
+                    for docData in range (len(self.postingFiles[postingFileName][term])):
+                        if self.postingFiles[postingFileName][term][docData][1] == tweet:
+                            tf = self.postingFiles[postingFileName][term][docData][3]
                             docSensorPerTerm[term] = docData
                             break
                     idf_Term = math.log2(numberOfTweets / self.inverted_idx[term][0])
-                    tfIdfThisTweet[term] = tf*idf_Term
+                    tfIdfThisTweet[term] = tf*idf_Term #tfidf = {word: 3.45324, tinkle:21234}
 
-                tfIdfThisTweetPowList = [math.pow(x,2) for x in tfIdfThisTweet.values()]
+                tfIdfThisTweetPowList = [math.pow(x,2) for x in tfIdfThisTweet.values()] #{word:5.2}
                 denominator = math.sqrt(sum(tfIdfThisTweetPowList))
                 for term in sorted(tweetsFile[tweet]):
                     #First - get the posting file
@@ -177,7 +177,7 @@ class Indexer:
                         postingFileName = "posting_" + str(term[0]).lower() + str(term[1]).lower()
 
                     enumerate = tfIdfThisTweet[term]
-                    self.postinpFiles[postingFileName][term][docSensorPerTerm[term]][3] = enumerate / denominator #Cossim of the term in this tweet
+                    self.postingFiles[postingFileName][term][docSensorPerTerm[term]][3] = enumerate / denominator #Cossim of the term in this tweet
             counterTweetsFiles -= 1
 
 
