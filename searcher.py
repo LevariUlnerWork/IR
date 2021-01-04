@@ -53,9 +53,8 @@ class Searcher:
                 if(term not in self.inverted_index.keys()):
                     continue
 
-                postingName = self.inverted_index[term][2]
-                posfile = self.posting_files[postingFileName]
-                inv_dic = self.inverted_index[term]
+                postingFileName = self.inverted_index[term][2]
+
                 for tweetData in self.posting_files[postingFileName][term]:
                     doc_id = tweetData[1]
                     tfidf = tweetData[3] * query_dict[term]

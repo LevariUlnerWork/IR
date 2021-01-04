@@ -9,7 +9,7 @@ class Indexer:
 
 
         self.inverted_idx = {}  # self.inverted_idx = [inverted_idx_nums, inverted_idx_ents, inverted_idx_others, inverted_idx_strs]
-        self.alone_entities_dict = []
+        self.alone_entities_dict = {}
         self.tweetTerms = {} #{TweetId:list of terms}
         self.counterOfTweetTermsFiles = 0
 
@@ -55,7 +55,7 @@ class Indexer:
                 if (str(term[0]).lower() not in self.letters):  #others
                     type = 1
                 elif(len(term) > 1): # 'J'
-                    if str(term[1]).lower() not in self.letters: #1400 -> 1.400K
+                    if str(term[1]).lower() not in self.letters and str(term[1]).lower() != '.': #1400 -> 1.400K
                         type = 1
                     else:  # strings
                         type = 2
@@ -63,10 +63,9 @@ class Indexer:
                     type = 2
 
                 if (' ' in term): #alone entities
-                    if term in self.alone_entities_dict: #fix it
-                        self.alone_entities_dict.remove(term)
-                    else:
-                        self.alone_entities_dict.append(term)
+                    if term not in self.alone_entities_dict: #fix it
+                        self.alone_entities_dict[term] = 0
+                    self.alone_entities_dict[term] += 1
 
                 if (type == 1):
                     if(postingFileName != "postingOthers"):
@@ -75,6 +74,10 @@ class Indexer:
                 elif(len(term)==1):
                     if postingFileName != "posting_" + term.lower():
                         postingFileName = "posting_" + term.lower()
+
+                elif (term[1] == '.'):
+                    if postingFileName != "posting_" + term[0].lower():
+                        postingFileName = "posting_" + term[0].lower()
                 else:
                     if postingFileName !="posting_" + str(term[0]).lower() + str(term[1]).lower():
                         postingFileName = "posting_" + term[0].lower() + term[1].lower()
@@ -107,7 +110,7 @@ class Indexer:
         utils.save_obj(self.tweetTerms, self.savingPath + "TweetTerm_%s" % (self.counterOfTweetTermsFiles))
         self.computeTfIdf(numberOfTweets)
         self.deleteSingleEntities()
-        utils.save_obj(self.postinpFiles, "postingFiles")
+        utils.save_obj(self.postingFiles, "postingFiles")
         utils.save_obj(self.inverted_idx, "inverted_idx")
 
     def computeTfIdf(self, numberOfTweets):
@@ -125,7 +128,7 @@ class Indexer:
                     if (str(term[0]).lower() not in self.letters):  # others
                         type = 1
                     elif (len(term) > 1):
-                        if str(term[1]).lower() not in self.letters:
+                        if str(term[1]).lower() not in self.letters and str(term[1]).lower() != '.':
                             type = 1
                         else:  # strings
                             type = 2
@@ -138,6 +141,8 @@ class Indexer:
                         postingFileName = "postingOthers"
                     elif len(term) == 1:
                             postingFileName = "posting_" + term.lower()
+                    elif term[1] == '.':
+                            postingFileName = "posting_" + term[0].lower()
                     else:
                         postingFileName = "posting_" + str(term[0]).lower() + str(term[1]).lower()
 
@@ -161,18 +166,21 @@ class Indexer:
                     if (str(term[0]).lower() not in self.letters):  # others
                         type = 1
                     elif (len(term) > 1):
-                        if str(term[1]).lower() not in self.letters:
+                        if str(term[1]).lower() not in self.letters and str(term[1]).lower() != '.':
                             type = 1
                         else:  # strings
                             type = 2
                     else:  # strings
                         type = 2
 
+                    sopposedPostingName = ""
 
                     if (type == 1):
                         postingFileName = "postingOthers"
                     elif len(term) == 1:
                         postingFileName = "posting_" + term.lower()
+                    elif term[1] == '.':
+                        postingFileName = "posting_" + term[0].lower()
                     else:
                         postingFileName = "posting_" + str(term[0]).lower() + str(term[1]).lower()
 
@@ -182,8 +190,9 @@ class Indexer:
 
 
     def deleteSingleEntities(self):
-        for term in self.alone_entities_dict:
-            self.inverted_idx.pop(term)
+        for term in self.alone_entities_dict.keys():
+            if (self.alone_entities_dict[term] == 1):
+                self.inverted_idx.pop(term)
         self.alone_entities_dict = {}
 
 
