@@ -174,9 +174,9 @@ def main(corpus_path = "Data2/",output_path = "posting",stemming=False,queries =
 
     full_path = open('queries.txt',"r", encoding= 'utf8')
     queries_list = full_path.read().split("\n")
-
+    query_time = []
     #create csv file:
-    with open("results.csv", 'w', newline='') as csvfile:
+    with open("results_local.csv", 'w', newline='') as csvfile:
         filewriter = csv.writer(csvfile)
         filewriter.writerow(["Query_num", "Tweet_id", "Rank"])
 
@@ -196,19 +196,22 @@ def main(corpus_path = "Data2/",output_path = "posting",stemming=False,queries =
         inverted_index = inv_dict['inverted_idx']
         posting = inv_dict['posting']
         # term_max_freq = load_max_freq()
-        start_query_time = time.time()
+
         for queryIndex in range(len(queries_list)):
+            start_query_time = time.time()
             query = queries_list[queryIndex]
             if(query == ""): continue
             final_rank = local_rank(query, inverted_index, posting, num_docs_to_retrieve, stemming, output_path)
             for doc_tuple in final_rank:
                 print(str(queryIndex) + ' tweet id: {}, score (unique common words with query): {}'.format(doc_tuple[1], doc_tuple[0]))
                 filewriter.writerow([queryIndex, "%s" % (doc_tuple[1]), doc_tuple[0]])
-        end_query_time = time.time() - start_query_time
+            query_time.append(f"query number {queryIndex}, took: %s" %(time.time() - start_query_time) + '\n')
 
-    timeFile = open("runtime.txt","w", encoding= 'utf8')
-    timeFile.write("engine time: " + str(end_engine_time))
-    timeFile.write("query time: " + str(end_query_time))
+    timeFile = open("runtime_local.txt","w", encoding= 'utf8')
+    timeFile.write("engine time: " + str(end_engine_time) + '\n')
+    timeFile.write("query time: " + '\n')
+    for timer in query_time:
+        timeFile.write(timer)
 
 
 
