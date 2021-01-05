@@ -1,5 +1,7 @@
 import csv
 import numpy as np
+import operator
+from local import LocalMethod
 from reader import ReadFile
 import stemmer
 from configuration import ConfigClass
@@ -80,9 +82,40 @@ def run_engine(corpus_path,output_path = "",stemming=False):
 def load_index():
     inverted_index = utils.load_obj("inverted_idx")
     return inverted_index
-def load_posting():
-    posting = utils.load_obj("postingFiles")
-    return posting
+
+
+def local_rank(query, inverted_index, posting, num_docs_to_retrieve, stemming, output_path):
+    """
+    This function gets a query and ranked the its relevant tweets. after that it takes the top 100 and checks if there
+    are some words we can add to the query, for improving the ranks.
+    in the end it returns the the top k tweets with their average rank for the 2 queries.
+    :param query: query = array of terms
+    :param num_docs_to_retrieve: k
+    :param stemming: stemmer if it is exists
+    :return: array of tuples  of top k relevant tweets for the query.
+    """
+    newLocal = LocalMethod(inverted_index,output_path, posting)
+    original_rank = search_and_rank_query(query, inverted_index, posting, num_docs_to_retrieve, stemming, output_path)
+    rel_tweets = [] # docIDs to check
+
+    for i in range (100):
+        rel_tweets.append(original_rank[i][0])
+
+    newQuery = []
+    for term_query in query:
+        newQuery.append(term_query)
+        append_words = newLocal.new_words_to_query()
+        if(len(append_words) > 0):
+            for word in append_words:
+                newQuery.append(word)
+
+    if(len(newQuery) != len(query)):
+
+        new_rank = search_and_rank_query(newQuery, inverted_index, posting, num_docs_to_retrieve, stemming, output_path)
+
+        return  newLocal.compute_final_rank(original_rank,new_rank,num_docs_to_retrieve)
+    else:
+        return original_rank
 
 
 def search_and_rank_query(query, inverted_index, posting_files , num_docs_to_retrieve, stemming=False, output_path=""):
@@ -154,14 +187,16 @@ def main(corpus_path = "Data2/",output_path = "posting",stemming=False,queries =
             queries_list += queries
         if(num_docs_to_retrieve > 2000):
             num_docs_to_retrieve=2000
-        inverted_index = load_index()
-        posting = load_posting()
+        inv_dict = load_index()
+        inverted_index = inv_dict['inverted_idx']
+        posting = inv_dict['posting']
         # term_max_freq = load_max_freq()
         start_query_time = time.time()
         for queryIndex in range(len(queries_list)):
             query = queries_list[queryIndex]
             if(query == ""): continue
-            for doc_tuple in search_and_rank_query(query, inverted_index, posting, num_docs_to_retrieve, stemming ,output_path):
+            final_rank = local_rank(query, inverted_index, posting, num_docs_to_retrieve, stemming, output_path)
+            for doc_tuple in final_rank:
                 print(str(queryIndex) + ' tweet id: {}, score (unique common words with query): {}'.format(doc_tuple[1], doc_tuple[0]))
                 filewriter.writerow([queryIndex, "%s" % (doc_tuple[1]), doc_tuple[0]])
         end_query_time = time.time() - start_query_time

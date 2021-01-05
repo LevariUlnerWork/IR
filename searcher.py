@@ -15,7 +15,6 @@ class Searcher:
         self.ranker = Ranker()
         self.inverted_index = inverted_index
         self.posting_files = posting_files
-        # self.term_max_freq = term_max_freq
         self.loadingPath = loadingPath
 
     def relevant_docs_from_posting(self, query):
@@ -24,8 +23,6 @@ class Searcher:
         :param query: query
         :return: dictionary of relevant documents.
         """
-        postingLoadedNames = [] # Names of posting file which we already loaded.
-        posting = {} # List of posting files which were loaded already
 
         query_dict = {} #{term:freq in query}
         for termInd in range(len(query)):

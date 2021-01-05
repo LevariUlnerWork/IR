@@ -102,23 +102,23 @@ class Indexer:
 
 
     def changeTweetTermsDict(self):
-        utils.save_obj(self.tweetTerms, self.savingPath + "TweetTerm_%s" % (self.counterOfTweetTermsFiles))
+        utils.save_obj(self.tweetTerms, "TweetTerm_%s" % (self.counterOfTweetTermsFiles))
         self.counterOfTweetTermsFiles += 1
         self.tweetTerms = {}
 
     def closeIndexer(self, numberOfTweets):
-        utils.save_obj(self.tweetTerms, self.savingPath + "TweetTerm_%s" % (self.counterOfTweetTermsFiles))
+        utils.save_obj(self.tweetTerms,"TweetTerm_%s" % (self.counterOfTweetTermsFiles))
         self.computeTfIdf(numberOfTweets)
         self.deleteSingleEntities()
-        utils.save_obj(self.postingFiles, "postingFiles")
-        utils.save_obj(self.inverted_idx, "inverted_idx")
+        inv_dict = {'inverted_idx':self.inverted_idx,'posting':self.postingFiles }
+        utils.save_obj(inv_dict, "inverted_idx")
 
     def computeTfIdf(self, numberOfTweets):
         counterTweetsFiles = self.counterOfTweetTermsFiles
         postingFile = {}
         postingFileName = ""
         while counterTweetsFiles >= 0:
-            tweetsFile = utils.load_obj(self.savingPath + "TweetTerm_%s" % (counterTweetsFiles))
+            tweetsFile = utils.load_obj( "TweetTerm_%s" % (counterTweetsFiles))
             for tweet in tweetsFile.keys():
                 docSensorPerTerm = {}
                 tfIdfThisTweet = {}

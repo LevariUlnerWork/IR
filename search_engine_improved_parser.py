@@ -80,9 +80,6 @@ def run_engine(corpus_path,output_path = "",stemming=False):
 def load_index():
     inverted_index = utils.load_obj("inverted_idx")
     return inverted_index
-def load_posting():
-    posting = utils.load_obj("postingFiles")
-    return posting
 
 
 def search_and_rank_query(query, inverted_index, posting_files , num_docs_to_retrieve, stemming=False, output_path=""):
@@ -154,8 +151,9 @@ def main(corpus_path = "Data2/",output_path = "posting",stemming=False,queries =
             queries_list += queries
         if(num_docs_to_retrieve > 2000):
             num_docs_to_retrieve=2000
-        inverted_index = load_index()
-        posting = load_posting()
+        inv_dict = load_index()
+        inverted_index = inv_dict['inverted_idx']
+        posting = inv_dict['posting']
         # term_max_freq = load_max_freq()
         start_query_time = time.time()
         for queryIndex in range(len(queries_list)):
