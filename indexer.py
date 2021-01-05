@@ -191,7 +191,10 @@ class Indexer:
 
     def deleteSingleEntities(self):
         for term in self.alone_entities_dict.keys():
+            if('Virology Journal' == term):
+                print("yes")
             if (self.alone_entities_dict[term] == 1):
+                self.postingFiles[self.inverted_idx[term][2]].pop(term)
                 self.inverted_idx.pop(term)
         self.alone_entities_dict = {}
 

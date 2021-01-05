@@ -95,19 +95,24 @@ def local_rank(query, inverted_index, posting, num_docs_to_retrieve, stemming, o
     :return: array of tuples  of top k relevant tweets for the query.
     """
     newLocal = LocalMethod(inverted_index,output_path, posting)
-    original_rank = search_and_rank_query(query, inverted_index, posting, num_docs_to_retrieve, stemming, output_path)
+    thisStemmer=None
+    if (stemming == True):
+        thisStemmer = stemmer.Stemmer()
+    p = Parse(stemming=thisStemmer, invIdx=inverted_index)
+    query_as_list = p.parse_sentence(query)
+    original_rank = search_and_rank_query(query_as_list, inverted_index, posting, num_docs_to_retrieve, stemming, output_path)
     rel_tweets = [] # docIDs to check
 
     for i in range (100):
         rel_tweets.append(original_rank[i][0])
-
     newQuery = []
-    for term_query in query:
+    for term_query in query_as_list:
         newQuery.append(term_query)
-        append_words = newLocal.new_words_to_query()
+        append_words = newLocal.new_words_to_query(term_query,rel_tweets)
         if(len(append_words) > 0):
             for word in append_words:
-                newQuery.append(word)
+                if word not in newQuery and word not in query_as_list:
+                    newQuery.append(word)
 
     if(len(newQuery) != len(query)):
 
@@ -118,7 +123,7 @@ def local_rank(query, inverted_index, posting, num_docs_to_retrieve, stemming, o
         return original_rank
 
 
-def search_and_rank_query(query, inverted_index, posting_files , num_docs_to_retrieve, stemming=False, output_path=""):
+def search_and_rank_query(query_as_list, inverted_index, posting_files , num_docs_to_retrieve, stemming=False, output_path=""):
     thisStemmer = None
     config = ConfigClass()
     loadingPath = output_path + config.saveFilesWithoutStem + "/"
@@ -126,8 +131,8 @@ def search_and_rank_query(query, inverted_index, posting_files , num_docs_to_ret
         thisStemmer = stemmer.Stemmer()
         loadingPath = output_path + config.saveFilesWithStem + "/"
 
-    p = Parse(stemming=thisStemmer,invIdx=inverted_index)
-    query_as_list = p.parse_sentence(query)
+    # p = Parse(stemming=thisStemmer,invIdx=inverted_index)
+    # query_as_list = p.parse_sentence(query)
     searcher = Searcher(inverted_index,loadingPath, posting_files)
     relevant_docs = searcher.relevant_docs_from_posting(query_as_list)
     ranked_docs = searcher.ranker.rank_relevant_doc(relevant_docs)
