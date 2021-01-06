@@ -39,9 +39,6 @@ class SearchEngine:
         stemmerLocal = None
         # if(stemming == True):
         #     stemmerLocal = stemmer.Stemmer()
-        p = Parse(stemming=stemmerLocal, iIndexer=self._indexer)  # Changed by Lev
-
-
 
         df = pd.read_parquet(fn, engine="pyarrow")
         documents_list = df.values.tolist()
@@ -56,12 +53,10 @@ class SearchEngine:
             #     break
 
             # parse the document
-            parsed_document = p.parse_doc(document)
+            parsed_document = self._parser.parse_doc(document)
             number_of_documents += 1
             # index the document data
             pdl = len(parsed_document.term_doc_dictionary.keys())  # term_dict length
-            if (pdl > 0):
-                continue
             self._indexer.add_new_doc(parsed_document)
         print('Finished parsing and indexing.')
 
@@ -170,4 +165,6 @@ class SearchEngine:
 
 
 
-
+index = Indexer(None)
+se = SearchEngine()
+se.main()

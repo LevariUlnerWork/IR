@@ -1,4 +1,3 @@
-import search_engine
 import pickle
 from queue import PriorityQueue
 

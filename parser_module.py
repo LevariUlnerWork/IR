@@ -12,7 +12,7 @@ class Parse:
         self.stemmering = None #stemming
         full_path.close()
         self.stop_words = listOfStopWords.split(",")
-        self.invIdx = indexer.inverted_index
+        self.invIdx = indexer.inverted_idx
 
     def parse_sentence(self, text):
         """
