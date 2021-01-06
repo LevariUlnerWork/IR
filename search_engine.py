@@ -33,19 +33,16 @@ def run_engine(corpus_path,output_path = "",stemming=False):
     listOfFold = os.listdir(corpus_path) #list of folders
     listOfDoc = [] #list of files and their paths
     for folder in listOfFold:
-        if(".DS" in folder):
-            continue
+        listOfDocsBefore = []
         if(".parquet" in folder):
             listOfDoc += [folder]
             continue
-        listOfDocsBefore = os.listdir(corpus_path + folder)
+        elif ("." not in folder):
+            listOfDocsBefore = os.listdir(corpus_path + folder)
         for file in listOfDocsBefore:
-            if (".DS" in file):
-                continue
-            listOfDoc += [folder + "/" + file]
+            if (".parquet" in file):
+                listOfDoc += [folder + "/" + file]
 
-    i = 0    #first file index
-    documents_list = [] #The list of tweets
 
     #Read all files:
     beforeStopPoints = np.linspace(100000, 10000000, 100)  # set the parts of the files
@@ -53,6 +50,7 @@ def run_engine(corpus_path,output_path = "",stemming=False):
     for point in beforeStopPoints:
         stopPoints.append(int(point))
 
+    i = 0    #first file index
 
     while i < len(listOfDoc):
         documents_list = r.read_file(file_name=listOfDoc[i])
@@ -118,7 +116,7 @@ def local_rank(query, inverted_index, posting, num_docs_to_retrieve, stemming, o
 
         new_rank = search_and_rank_query(newQuery, inverted_index, posting, num_docs_to_retrieve, stemming, output_path)
 
-        return  newLocal.compute_final_rank(original_rank,new_rank,num_docs_to_retrieve)
+        return  newLocal.compute_final_rank(original_rank, new_rank, num_docs_to_retrieve)
     else:
         return original_rank
 
@@ -131,15 +129,13 @@ def search_and_rank_query(query_as_list, inverted_index, posting_files , num_doc
         thisStemmer = stemmer.Stemmer()
         loadingPath = output_path + config.saveFilesWithStem + "/"
 
-    # p = Parse(stemming=thisStemmer,invIdx=inverted_index)
-    # query_as_list = p.parse_sentence(query)
     searcher = Searcher(inverted_index,loadingPath, posting_files)
     relevant_docs = searcher.relevant_docs_from_posting(query_as_list)
     ranked_docs = searcher.ranker.rank_relevant_doc(relevant_docs)
     return searcher.ranker.retrieve_top_k(ranked_docs, num_docs_to_retrieve)
 
 
-def main(corpus_path = "Data2/",output_path = "posting",stemming=False,queries = ["What to do"],num_docs_to_retrieve = 2000):
+def main(corpus_path = "data/",output_path = "posting",stemming=False,queries = ["What to do"],num_docs_to_retrieve = 2000):
     '''
     dict_final_data =  utils.load_inverted_index()
     final_data = {}
@@ -195,7 +191,6 @@ def main(corpus_path = "Data2/",output_path = "posting",stemming=False,queries =
         inv_dict = load_index()
         inverted_index = inv_dict['inverted_idx']
         posting = inv_dict['posting']
-        # term_max_freq = load_max_freq()
 
         for queryIndex in range(len(queries_list)):
             start_query_time = time.time()

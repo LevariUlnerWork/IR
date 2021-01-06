@@ -5,18 +5,14 @@ from document import Document
 
 class Parse:
 
-    def __init__(self, stemming=None, iIndexer=None, invIdx = None):
+    def __init__(self, indexer):
         #self.stop_words = stopwords.words('english') - we are not use this stop words
         full_path = open('stop-words.txt',"r")
         listOfStopWords = full_path.read()
-        self.stemmering = stemming
+        self.stemmering = None #stemming
         full_path.close()
         self.stop_words = listOfStopWords.split(",")
-        self.invIdx = None
-        if(iIndexer != None):
-            self.invIdx = iIndexer.inverted_idx
-        elif(invIdx != None):
-            self.invIdx = invIdx
+        self.invIdx = indexer.inverted_index
 
     def parse_sentence(self, text):
         """

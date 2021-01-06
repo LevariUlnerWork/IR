@@ -2,16 +2,20 @@ import math
 import utils
 import string
 from operator import itemgetter
-from queue import PriorityQueue
+
+# DO NOT MODIFY CLASS NAME
 class Indexer:
 
-    def __init__(self,savingPath = ""):
-
+    # DO NOT MODIFY THIS SIGNATURE
+    # You can change the internal implementation as you see fit.
+    def __init__(self,config):
 
         self.inverted_idx = {}  # self.inverted_idx = [inverted_idx_nums, inverted_idx_ents, inverted_idx_others, inverted_idx_strs]
         self.alone_entities_dict = {}
         self.tweetTerms = {} #{TweetId:list of terms}
         self.counterOfTweetTermsFiles = 0
+        self.config = config
+        self.counterOfTweets=0
 
         letters = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]#letters = [a,b,c....0,1...9]
         for letter in string.ascii_lowercase:
@@ -26,13 +30,13 @@ class Indexer:
 
         self.letters = letters
         self.postingFiles["postingOthers"] = {}
-        self.savingPath = savingPath
         '''
         the posting files is built in this way:
         {term: [[freq of the term, docID, indexes of the term in this tweet, tf (would be in the end his cossim in this tweet)]]}
-        
         '''
 
+    # DO NOT MODIFY THIS SIGNATURE
+    # You can change the internal implementation as you see fit.
     def add_new_doc(self, document):
         """
         This function perform indexing process for a document object.
@@ -40,7 +44,7 @@ class Indexer:
         :param document: a document need to be indexed.
         :return: -
         """
-
+        self.counterOfTweets += 1
         docID = document.tweet_id
         document_dictionary = document.term_doc_dictionary # document_dictionary = {term:[[indexes],freq]}
         self.tweetTerms[docID] = list(document_dictionary.keys())
@@ -81,7 +85,7 @@ class Indexer:
                 else:
                     if postingFileName !="posting_" + str(term[0]).lower() + str(term[1]).lower():
                         postingFileName = "posting_" + term[0].lower() + term[1].lower()
-# this line
+
                 indexes_t = document_dictionary[term][0]
                 freq_t = document_dictionary[term][1]
                 tf = freq_t / freq_max
@@ -98,20 +102,33 @@ class Indexer:
                     self.postingFiles[postingFileName][term].append([freq_t, docID, indexes_t,tf])
 
 
+    # DO NOT MODIFY THIS SIGNATURE
+    # You can change the internal implementation as you see fit.
+    def save_index(self, fn):
+        """
+        Saves a pre-computed index (or indices) so we can save our work.
+        Input:
+              fn - file name of pickled index.
+        """
+        utils.save_obj(self.tweetTerms, "TweetTerm_%s" % (self.counterOfTweetTermsFiles))
+        self.computeTfIdf( self.counterOfTweets)
+        self.deleteSingleEntities()
+        inv_dict = {'inverted_idx': self.inverted_idx, 'posting': self.postingFiles}
+        utils.save_obj(inv_dict, "inverted_idx")
 
-
+    def load_index(self, fn):
+        """
+        Loads a pre-computed index (or indices) so we can answer queries.
+        Input:
+            fn - file name of pickled index.
+        """
+        return utils.load_obj(fn)
 
     def changeTweetTermsDict(self):
         utils.save_obj(self.tweetTerms, "TweetTerm_%s" % (self.counterOfTweetTermsFiles))
         self.counterOfTweetTermsFiles += 1
         self.tweetTerms = {}
 
-    def closeIndexer(self, numberOfTweets):
-        utils.save_obj(self.tweetTerms,"TweetTerm_%s" % (self.counterOfTweetTermsFiles))
-        self.computeTfIdf(numberOfTweets)
-        self.deleteSingleEntities()
-        inv_dict = {'inverted_idx':self.inverted_idx,'posting':self.postingFiles }
-        utils.save_obj(inv_dict, "inverted_idx")
 
     def computeTfIdf(self, numberOfTweets):
         counterTweetsFiles = self.counterOfTweetTermsFiles
@@ -191,8 +208,6 @@ class Indexer:
 
     def deleteSingleEntities(self):
         for term in self.alone_entities_dict.keys():
-            if('Virology Journal' == term):
-                print("yes")
             if (self.alone_entities_dict[term] == 1):
                 self.postingFiles[self.inverted_idx[term][2]].pop(term)
                 self.inverted_idx.pop(term)

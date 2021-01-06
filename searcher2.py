@@ -1,6 +1,6 @@
 import string
 from parser_module import Parse
-from ranker import Ranker
+from ranker2 import Ranker
 import utils
 import math
 
@@ -36,7 +36,7 @@ class Searcher:
         relevant_docs = self._relevant_docs_from_posting(query_as_list)
         n_relevant = len(relevant_docs)
         ranked_doc_ids = Ranker.rank_relevant_docs(relevant_docs)
-        return n_relevant, ranked_doc_ids
+        return n_relevant, ranked_doc_ids, query_as_list
 
 
 
