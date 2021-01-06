@@ -1,3 +1,4 @@
+import pandas as pd
 import csv
 import numpy as np
 import operator
@@ -39,7 +40,6 @@ class SearchEngine:
         stemmerLocal = None
         # if(stemming == True):
         #     stemmerLocal = stemmer.Stemmer()
-        p = Parse(stemming=stemmerLocal, iIndexer=self._indexer)  # Changed by Lev
 
         df = pd.read_parquet(fn, engine="pyarrow")
         documents_list = df.values.tolist()
@@ -52,11 +52,11 @@ class SearchEngine:
             #     break
 
             # parse the document
-            parsed_document = p.parse_doc(document)
+            parsed_document = self._parser.parse_doc(document)
             number_of_documents += 1
             # index the document data
             pdl = len(parsed_document.term_doc_dictionary.keys())  # term_dict length
-            if (pdl > 0):
+            if (pdl == 0):
                 continue
             self._indexer.add_new_doc(parsed_document)
         print('Finished parsing and indexing.')
@@ -101,22 +101,24 @@ class SearchEngine:
         rel_tweets = [] # docIDs to check
         for i in range (100):
             rel_tweets.append(original_rank[i][0])
-        newQuery = []
+        newQuery = ""
         for term_query in query_as_list:
-            newQuery.append(term_query)
+            newQuery += term_query
             append_words = newLocal.new_words_to_query(term_query,rel_tweets)
             if(len(append_words) > 0):
                 for word in append_words:
                     if word not in newQuery and word not in query_as_list:
-                        newQuery.append(word)
+                        newQuery += (word)
 
         if(len(newQuery) != len(query)):
 
-            new_rank = searcher.search(newQuery)
-
-            return  newLocal.compute_final_rank(original_rank, new_rank, k)
+            k, new_rank, query_as_list= searcher.search(newQuery)
+            final_rank = newLocal.compute_final_rank(original_rank, new_rank, k)
+            ans = [x[0] for x in final_rank]
+            return k, ans
         else:
-            return original_rank
+            ans = [x[0] for x in original_rank]
+            return k, ans
 
     # DO NOT MODIFY THIS SIGNATURE
     # You can change the internal implementation as you see fit.
@@ -134,7 +136,7 @@ class SearchEngine:
         searcher = Searcher(self._parser, self._indexer, model=self._model)
         return self.local_rank(searcher, query)
 
-    def main(self, corpus_path="Data2/", output_path="posting", stemming=False, queries=["What to do"],
+    def main(self, corpus_path="Data2/", output_path="posting", stemming=False, queries=[""],
              num_docs_to_retrieve=2000):
         '''
         dict_final_data =  utils.load_inverted_index()
@@ -192,13 +194,11 @@ class SearchEngine:
                 n_relevant, ranked_doc_ids = self.search(query)
                 for doc_tuple_num in range(n_relevant):
                     print(f'tweet id: {ranked_doc_ids[doc_tuple_num]}, place_number: {doc_tuple_num}')
-                    filewriter.writerow([queryIndex], ["%s" % (ranked_doc_ids)])
+                    filewriter.writerow([[queryIndex], ["%s" % (ranked_doc_ids)]])
             end_query_time = time.time() - start_query_time
 
         timeFile = open("runtime.txt", "w", encoding='utf8')
         timeFile.write("engine time: " + str(end_engine_time))
         timeFile.write("query time: " + str(end_query_time))
-
-
 
 

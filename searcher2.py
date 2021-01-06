@@ -7,15 +7,15 @@ import math
 
 class Searcher:
 
-    def __init__(self, parser, indexer):
+    def __init__(self, parser, indexer, model=None):
         """
         :param inverted_index: dictionary of inverted index
         """
         self._parser = parser
         self._indexer = indexer
         self._ranker = Ranker()
-        self.inverted_index = indexer.inverted_index
-        self.posting_files = indexer.posting_files
+        self.inverted_index = indexer.inverted_idx
+        self.posting_files = indexer.postingFiles
 
     # DO NOT MODIFY THIS SIGNATURE
     # You can change the internal implementation as you see fit.
@@ -32,7 +32,7 @@ class Searcher:
             and the last is the least relevant result.
         """
         query_as_list = self._parser.parse_sentence(query)
-        thisStemmer = self._parser.stemming
+        # thisStemmer = self._parser.stemming
         relevant_docs = self._relevant_docs_from_posting(query_as_list)
         n_relevant = len(relevant_docs)
         ranked_doc_ids = Ranker.rank_relevant_docs(relevant_docs)
@@ -44,7 +44,7 @@ class Searcher:
 
 
 
-    def relevant_docs_from_posting(self, query):
+    def _relevant_docs_from_posting(self, query):
         """
         This function loads the posting list and count the amount of relevant documents per term.
         :param query: query

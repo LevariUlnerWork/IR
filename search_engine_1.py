@@ -57,6 +57,8 @@ class SearchEngine:
             number_of_documents += 1
             # index the document data
             pdl = len(parsed_document.term_doc_dictionary.keys())  # term_dict length
+            if(pdl == 0):
+                continue
             self._indexer.add_new_doc(parsed_document)
         print('Finished parsing and indexing.')
 
@@ -156,7 +158,7 @@ class SearchEngine:
                 n_relevant, ranked_doc_ids=self.search(query)
                 for doc_tuple_num in range(n_relevant):
                     print(f'tweet id: {ranked_doc_ids[doc_tuple_num]}, place_number: {doc_tuple_num}')
-                    filewriter.writerow([queryIndex],[ "%s" % (ranked_doc_ids)])
+                    filewriter.writerow([[queryIndex],[ "%s" % (ranked_doc_ids)]])
             end_query_time = time.time() - start_query_time
 
         timeFile = open("runtime.txt","w", encoding= 'utf8')
@@ -164,7 +166,7 @@ class SearchEngine:
         timeFile.write("query time: " + str(end_query_time))
 
 
-
-index = Indexer(None)
-se = SearchEngine()
-se.main()
+#
+# index = Indexer(None)
+# se = SearchEngine()
+# se.main()

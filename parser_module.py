@@ -81,10 +81,10 @@ class Parse:
         full_text, retweet_text, quote_text, retweet_quoted_text = texts_list
 
 
+
         # try: #trying to parse the text, if it failed - we loose the term of this tweet, but the IR continues
-        tokenized_text = []
-        if("RT" not in full_text):
-                tokenized_text = self.parse_sentence(full_text)
+
+        tokenized_text = self.parse_sentence(full_text)
         if(type(retweet_text) == str and len(retweet_text)!= ''):
                 tokenized_text += self.parse_sentence(retweet_text)
         if (type(quote_text) == str and len(quote_text)!= ''):
