@@ -111,7 +111,7 @@ class Indexer:
         self.computeTfIdf(self.counterOfTweets)
         self.deleteSingleEntities()
         inv_dict = {'inverted_idx': self.inverted_idx, 'posting': self.postingFiles}
-        utils.save_obj(inv_dict, "inverted_idx")
+        utils.save_obj(inv_dict, fn)
 
     def load_index(self, fn):
         """

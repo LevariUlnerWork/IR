@@ -39,11 +39,6 @@ class Searcher:
         return n_relevant, ranked_doc_ids, query_as_list
 
 
-
-
-
-
-
     def _relevant_docs_from_posting(self, query):
         """
         This function loads the posting list and count the amount of relevant documents per term.

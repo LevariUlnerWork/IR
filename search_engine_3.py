@@ -1,13 +1,13 @@
 import pandas as pd
 import csv
-from local import LocalMethod
+from globalMethod import GlobalMethod
 from parser_module import Parse
 from indexer import Indexer
 import searcher2
 import os
 import time
 
-#local method
+#global method
 
 # DO NOT CHANGE THE CLASS NAME
 class SearchEngine:
@@ -77,7 +77,7 @@ class SearchEngine:
         pass
 
 
-    def local_rank(self, searcher, query):
+    def global_rank(self, searcher, query):
         """
         This function gets a query and ranked the its relevant tweets. after that it takes the top 100 and checks if there
         are some words we can add to the query, for improving the ranks.
@@ -88,18 +88,15 @@ class SearchEngine:
         :return: array of tuples  of top k relevant tweets for the query.
         """
 
-        newLocal = LocalMethod(searcher.inverted_index,"", searcher.posting_files)
+        newLocal = GlobalMethod(searcher.inverted_index,"", searcher.posting_files)
         thisStemmer=None
         # if (stemming == True):
         #     thisStemmer = stemmer.Stemmer()
         k,original_rank, query_as_list = searcher.search(query)
-        rel_tweets = [] # docIDs to check
-        for i in range (100):
-            rel_tweets.append(original_rank[i][0])
         newQuery = ""
         for term_query in query_as_list:
             newQuery += term_query
-            append_words = newLocal.new_words_to_query(term_query,rel_tweets)
+            append_words = newLocal.new_words_to_query(term_query)
             if(len(append_words) > 0):
                 for word in append_words:
                     if word not in newQuery and word not in query_as_list:
@@ -129,7 +126,7 @@ class SearchEngine:
             and the last is the least relevant result.
         """
         searcher = searcher2.Searcher(self._parser, self._indexer, model=self._model)
-        return self.local_rank(searcher, query)
+        return self.global_rank(searcher, query)
 
     def main(self, corpus_path="data/", output_path="posting", stemming=False, queries=[""],
              num_docs_to_retrieve=2000):
