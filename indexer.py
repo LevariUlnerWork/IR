@@ -119,7 +119,8 @@ class Indexer:
         Input:
             fn - file name of pickled index.
         """
-        return utils.load_obj(fn)
+        name = fn.split('.pkl')[0]
+        return utils.load_obj(name)
 
     def changeTweetTermsDict(self):
         utils.save_obj(self.tweetTerms, "TweetTerm_%s" % (self.counterOfTweetTermsFiles))

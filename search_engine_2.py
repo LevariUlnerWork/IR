@@ -94,16 +94,16 @@ class SearchEngine:
         #     thisStemmer = stemmer.Stemmer()
         k,original_rank, query_as_list = searcher.search(query)
         rel_tweets = [] # docIDs to check
-        for i in range (100):
+        for i in range (min(100,k)):
             rel_tweets.append(original_rank[i][0])
         newQuery = ""
         for term_query in query_as_list:
-            newQuery += term_query
+            newQuery += term_query + ' '
             append_words = newLocal.new_words_to_query(term_query,rel_tweets)
             if(len(append_words) > 0):
                 for word in append_words:
                     if word not in newQuery and word not in query_as_list:
-                        newQuery += (word)
+                        newQuery += (word) + ' '
 
         if(len(newQuery) != len(query)):
 
@@ -196,5 +196,3 @@ class SearchEngine:
         timeFile.write("engine time: " + str(end_engine_time))
         timeFile.write("query time: " + str(end_query_time))
 
-sea = SearchEngine()
-sea.main()

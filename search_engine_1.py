@@ -11,7 +11,7 @@ import utils
 import os
 import time
 
-#advanced parser
+
 
 # DO NOT CHANGE THE CLASS NAME
 class SearchEngine:
@@ -166,7 +166,7 @@ class SearchEngine:
         timeFile.write("query time: " + str(end_query_time))
 
 
-#
+
 # index = Indexer(None)
 # se = SearchEngine()
 # se.main()

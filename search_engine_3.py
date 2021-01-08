@@ -56,8 +56,6 @@ class SearchEngine:
             self._indexer.add_new_doc(parsed_document)
         print('Finished parsing and indexing.')
 
-        self._indexer.save_index('idx_bench')
-
     def load_index(self, fn):
         """
         Loads a pre-computed index (or indices) so we can answer queries.
@@ -88,24 +86,24 @@ class SearchEngine:
         :return: array of tuples  of top k relevant tweets for the query.
         """
 
-        newLocal = GlobalMethod(searcher.inverted_index,"", searcher.posting_files)
+        newGlobal = GlobalMethod(searcher.inverted_index,"", searcher.posting_files)
         thisStemmer=None
         # if (stemming == True):
         #     thisStemmer = stemmer.Stemmer()
         k,original_rank, query_as_list = searcher.search(query)
         newQuery = ""
         for term_query in query_as_list:
-            newQuery += term_query
-            append_words = newLocal.new_words_to_query(term_query)
+            newQuery += term_query + ' '
+            append_words = newGlobal.new_words_to_query(term_query)
             if(len(append_words) > 0):
                 for word in append_words:
                     if word not in newQuery and word not in query_as_list:
-                        newQuery += (word)
+                        newQuery += word + ' '
 
         if(len(newQuery) != len(query)):
 
             k, new_rank, query_as_list= searcher.search(newQuery)
-            final_rank = newLocal.compute_final_rank(original_rank, new_rank, k)
+            final_rank = newGlobal.compute_final_rank(original_rank, new_rank, k)
             ans = [x[0] for x in final_rank]
             return k, ans
         else:
@@ -193,5 +191,3 @@ class SearchEngine:
         timeFile.write("engine time: " + str(end_engine_time))
         timeFile.write("query time: " + str(end_query_time))
 
-sea = SearchEngine()
-sea.main()

@@ -62,7 +62,7 @@ class SearchEngine:
             self._indexer.add_new_doc(parsed_document)
         print('Finished parsing and indexing.')
 
-        self._indexer.save_index('inverted_idx')
+        self._indexer.save_index('idx_bench')
 
 
 
