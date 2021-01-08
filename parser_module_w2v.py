@@ -1,7 +1,8 @@
 import calendar
 import re
 from document import Document
-
+import logging
+from gensim.models import word2vec
 
 
 class Parse:
@@ -14,6 +15,9 @@ class Parse:
         full_path.close()
         self.stop_words = listOfStopWords.split(",")
         self.invIdx = indexer.inverted_idx
+
+        # logging.basicConfig(format='%(asctime)s: %(levelname)s: %(message)s',level=logging.INFO)
+        # self.model = word2vec.Word2Vec( ["first"], size=150, window=10, min_count=2, workers=10, iter=10)
 
     def parse_sentence(self, text):
         """
@@ -423,9 +427,8 @@ class Parse:
                 #for case: 10.6 precent
                 if(wordToken == "precent" or wordToken == "precentage"):
                     if(wordIndex != 0):
-                        if(len(finalList) != 0):
-                            finalList[len(finalList)-1] += "%"
-                            continue
+                        finalList[wordIndex-1] += "%"
+                        continue
 
                 #for case: 123 Thousand
                 if(wordToken == "Thousand" or wordToken == "thousand" or wordToken == "Thousands" or wordToken == "thousands"):
@@ -468,7 +471,7 @@ class Parse:
                         continue
 
                 # for case: Numbers
-                if (Parse.isfloat(wordToken)): # if the word is like "inf" or "infinity" it would false positivily think it is a number
+                if (Parse.isfloat(wordToken.replace('.', '', 1))): # if the word is like "inf" or "infinity" it would false positivily think it is a number
                     wordTokenNumber = float(wordToken)
                     if(wordTokenNumber > 1000000000000): # we aren't save Tweet ID as a token, cause no one would search for them
                         continue
@@ -526,7 +529,7 @@ class Parse:
                             finalList.append(year)
                         continue
 
-                # #Capital letters:
+                #Capital letters:
                 if len(wordToken) > 1 and wordToken[0].isupper() and ' ' not in wordToken and '-' not in wordToken:
                     # for case: Max -> max
                     if (wordToken.lower() in self.invIdx.keys()):

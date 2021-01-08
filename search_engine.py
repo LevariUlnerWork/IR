@@ -24,7 +24,7 @@ def run_engine(corpus_path,output_path = "",stemming=False):
     if(stemming == True):
         stemmerLocal = stemmer.Stemmer()
         savingPath = output_path + config.saveFilesWithStem + "/"
-    p = Parse(stemming=stemmerLocal, iIndexer=indexer)  # Changed by Lev
+    p = Parse(indexer)  # Changed by Lev
     if os.path.exists(savingPath) == False:
         os.makedirs(savingPath)
     r = ReadFile(corpus_path)
@@ -64,16 +64,18 @@ def run_engine(corpus_path,output_path = "",stemming=False):
 
             # parse the document
             parsed_document = p.parse_doc(document)
+            print(number_of_documents)
             number_of_documents += 1
             # index the document data
-            pdl = len(parsed_document.term_doc_dictionary.keys())  # term_dict length
-            if (pdl > 0):
-                indexer.add_new_doc(parsed_document)
-            if (number_of_documents in stopPoints):
-                indexer.changeTweetTermsDict()
+            # pdl = len(parsed_document.term_doc_dictionary.keys())  # term_dict length
+            # if (pdl > 0):
+            #     indexer.add_new_doc(parsed_document)
+            # if (number_of_documents in stopPoints):
+            #     indexer.changeTweetTermsDict()
 
-
-    indexer.closeIndexer(number_of_documents)
+    print("Done")
+    #
+    # indexer.closeIndexer(number_of_documents)
 
 
 
@@ -135,7 +137,7 @@ def search_and_rank_query(query_as_list, inverted_index, posting_files , num_doc
     return searcher.ranker.retrieve_top_k(ranked_docs, num_docs_to_retrieve)
 
 
-def main(corpus_path = "data/",output_path = "posting",stemming=False,queries = ["What to do"],num_docs_to_retrieve = 2000):
+def main(corpus_path = "Old_Data/",output_path = "posting",stemming=False,queries = ["What to do"],num_docs_to_retrieve = 2000):
     '''
     dict_final_data =  utils.load_inverted_index()
     final_data = {}
