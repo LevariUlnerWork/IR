@@ -12,7 +12,7 @@ import utils
 import os
 import time
 
-
+#improved parser + word2vec + spelling correction
 
 # DO NOT CHANGE THE CLASS NAME
 class SearchEngine:

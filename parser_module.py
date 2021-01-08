@@ -1,8 +1,7 @@
 import calendar
 import re
 from document import Document
-
-
+from spellchecker import SpellChecker
 
 class Parse:
 
@@ -14,6 +13,8 @@ class Parse:
         full_path.close()
         self.stop_words = listOfStopWords.split(",")
         self.invIdx = indexer.inverted_idx
+        #spelling correction
+        self.spell = SpellChecker()
 
     def parse_sentence(self, text):
         """
@@ -25,6 +26,8 @@ class Parse:
         text_tokens_without_stopwords = [w for w in text_tokens if w not in self.stop_words]
         if (self.stemmering != None):
             text_tokens_without_stopwords = self.stemmering.stem_list(text_tokens_without_stopwords)
+
+        misspelled = self.spell.
         return text_tokens_without_stopwords
 
     #this function is used for the tweets

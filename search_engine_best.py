@@ -1,17 +1,13 @@
-import csv
 import pandas as pd
-import numpy as np
-from reader import ReadFile
-import stemmer
-from configuration import ConfigClass
+import csv
+from local import LocalMethod
 from parser_module import Parse
 from indexer import Indexer
-from searcher import Searcher
-import utils
+import searcher2
 import os
 import time
 
-
+#improved parser + local method + spelling correction
 
 # DO NOT CHANGE THE CLASS NAME
 class SearchEngine:
@@ -44,8 +40,6 @@ class SearchEngine:
         documents_list = df.values.tolist()
         number_of_documents = 0
 
-
-
         # Iterate over every document in the file
         for idx, document in enumerate(documents_list):
 
@@ -57,14 +51,12 @@ class SearchEngine:
             number_of_documents += 1
             # index the document data
             pdl = len(parsed_document.term_doc_dictionary.keys())  # term_dict length
-            if(pdl == 0):
+            if (pdl == 0):
                 continue
             self._indexer.add_new_doc(parsed_document)
         print('Finished parsing and indexing.')
 
         self._indexer.save_index('idx_bench')
-
-
 
     def load_index(self, fn):
         """
@@ -84,6 +76,45 @@ class SearchEngine:
         """
         pass
 
+
+    def local_rank(self, searcher, query):
+        """
+        This function gets a query and ranked the its relevant tweets. after that it takes the top 100 and checks if there
+        are some words we can add to the query, for improving the ranks.
+        in the end it returns the the top k tweets with their average rank for the 2 queries.
+        :param query: query = array of terms
+        :param num_docs_to_retrieve: k
+        :param stemming: stemmer if it is exists
+        :return: array of tuples  of top k relevant tweets for the query.
+        """
+
+        newLocal = LocalMethod(searcher.inverted_index,"", searcher.posting_files)
+        thisStemmer=None
+        # if (stemming == True):
+        #     thisStemmer = stemmer.Stemmer()
+        k,original_rank, query_as_list = searcher.search(query)
+        rel_tweets = [] # docIDs to check
+        for i in range (min(100,k)):
+            rel_tweets.append(original_rank[i][0])
+        newQuery = ""
+        for term_query in query_as_list:
+            newQuery += term_query + ' '
+            append_words = newLocal.new_words_to_query(term_query,rel_tweets)
+            if(len(append_words) > 0):
+                for word in append_words:
+                    if word not in newQuery and word not in query_as_list:
+                        newQuery += (word) + ' '
+
+        if(len(newQuery) != len(query)):
+
+            k, new_rank, query_as_list= searcher.search(newQuery)
+            final_rank = newLocal.compute_final_rank(original_rank, new_rank, k)
+            ans = [x[0] for x in final_rank]
+            return k, ans
+        else:
+            ans = [x[0] for x in original_rank]
+            return k, ans
+
     # DO NOT MODIFY THIS SIGNATURE
     # You can change the internal implementation as you see fit.
     def search(self, query):
@@ -97,10 +128,11 @@ class SearchEngine:
             a list of tweet_ids where the first element is the most relavant
             and the last is the least relevant result.
         """
-        searcher = Searcher(self._parser, self._indexer, model=self._model)
-        return searcher.search(query)
+        searcher = searcher2.Searcher(self._parser, self._indexer, model=self._model)
+        return self.local_rank(searcher, query)
 
-    def main(self,corpus_path = "Data2/",output_path = "posting",stemming=False,queries = ["What to do"],num_docs_to_retrieve = 2000):
+    def main(self, corpus_path="data/", output_path="posting", stemming=False, queries=[""],
+             num_docs_to_retrieve=2000):
         '''
         dict_final_data =  utils.load_inverted_index()
         final_data = {}
@@ -117,13 +149,12 @@ class SearchEngine:
         pylab.legend(loc='lower left')
         pylab.show()
         '''
-        if("/" != corpus_path[len(corpus_path)-1]):
+        if ("/" != corpus_path[len(corpus_path) - 1]):
             corpus_path += "/"
         # if ("/" != output_path[len(output_path)-1]):
         #     output_path += "/"
 
-
-        if(os.path.exists(output_path) == False):
+        if (os.path.exists(output_path) == False):
             os.makedirs(output_path)
         #
 
@@ -133,40 +164,35 @@ class SearchEngine:
 
         end_engine_time = time.time() - start_engine_time
 
-        full_path = open('queries.txt',"r", encoding= 'utf8')
+        full_path = open('queries.txt', "r", encoding='utf8')
         queries_list = full_path.read().split("\n")
 
-        #create csv file:
+        # create csv file:
         with open("results.csv", 'w', newline='') as csvfile:
             filewriter = csv.writer(csvfile)
             filewriter.writerow(["Query_num", "Tweet_id", "Rank"])
 
-            #query = input("Please enter a query: ")
-            if(type(queries) == str):
-                try: #If there is a file of queries
-                    full_path = open(queries, "r",encoding='utf8')
+            # query = input("Please enter a query: ")
+            if (type(queries) == str):
+                try:  # If there is a file of queries
+                    full_path = open(queries, "r", encoding='utf8')
                     queries_list += full_path.read(queries).split('\n')
-                except:#if queries is one line of query
+                except:  # if queries is one line of query
                     queries_list += [queries]
 
-            else: #if queries is a list of queries
+            else:  # if queries is a list of queries
                 queries_list += queries
             start_query_time = time.time()
             for queryIndex in range(len(queries_list)):
                 query = queries_list[queryIndex]
-                if(query == ""): continue
-                n_relevant, ranked_doc_ids=self.search(query)
+                if (query == ""): continue
+                n_relevant, ranked_doc_ids = self.search(query)
                 for doc_tuple_num in range(n_relevant):
                     print(f'tweet id: {ranked_doc_ids[doc_tuple_num]}, place_number: {doc_tuple_num}')
-                    filewriter.writerow([[queryIndex],[ "%s" % (ranked_doc_ids)]])
+                    filewriter.writerow([[queryIndex], ["%s" % (ranked_doc_ids)]])
             end_query_time = time.time() - start_query_time
 
-        timeFile = open("runtime.txt","w", encoding= 'utf8')
+        timeFile = open("runtime.txt", "w", encoding='utf8')
         timeFile.write("engine time: " + str(end_engine_time))
         timeFile.write("query time: " + str(end_query_time))
 
-
-
-# index = Indexer(None)
-# se = SearchEngine()
-# se.main()

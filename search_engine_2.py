@@ -7,7 +7,7 @@ import searcher2
 import os
 import time
 
-#local method
+#improved parser + local method + spelling correction
 
 # DO NOT CHANGE THE CLASS NAME
 class SearchEngine:
