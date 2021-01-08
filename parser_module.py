@@ -27,7 +27,14 @@ class Parse:
         if (self.stemmering != None):
             text_tokens_without_stopwords = self.stemmering.stem_list(text_tokens_without_stopwords)
 
-        misspelled = self.spell.
+        misspelled = self.spell.unknown(text_tokens_without_stopwords)
+        for misTerm in misspelled:
+            indexError = text_tokens_without_stopwords.index(misTerm)
+            text_tokens_without_stopwords[indexError] = self.spell.correction(misTerm)
+            print(text_tokens_without_stopwords[indexError])
+
+
+
         return text_tokens_without_stopwords
 
     #this function is used for the tweets
