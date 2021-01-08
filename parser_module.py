@@ -14,7 +14,7 @@ class Parse:
         self.stop_words = listOfStopWords.split(",")
         self.invIdx = indexer.inverted_idx
         #spelling correction
-        self.spell = SpellChecker()
+        self.spell = SpellChecker(case_sensitive= True)
 
     def parse_sentence(self, text):
         """
@@ -29,9 +29,14 @@ class Parse:
 
         misspelled = self.spell.unknown(text_tokens_without_stopwords)
         for misTerm in misspelled:
-            indexError = text_tokens_without_stopwords.index(misTerm)
-            text_tokens_without_stopwords[indexError] = self.spell.correction(misTerm)
-            print(text_tokens_without_stopwords[indexError])
+            try:
+                indexError = text_tokens_without_stopwords.index(misTerm)
+                corrWord = self.spell.correction(misTerm)
+                text_tokens_without_stopwords[indexError] = self.spell.correction(misTerm)
+                print(text_tokens_without_stopwords[indexError])
+            except:
+                continue
+
 
 
 

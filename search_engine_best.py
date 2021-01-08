@@ -196,3 +196,5 @@ class SearchEngine:
         timeFile.write("engine time: " + str(end_engine_time))
         timeFile.write("query time: " + str(end_query_time))
 
+se = SearchEngine()
+se.main()
