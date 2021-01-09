@@ -27,16 +27,14 @@ class Parse:
         if (self.stemmering != None):
             text_tokens_without_stopwords = self.stemmering.stem_list(text_tokens_without_stopwords)
 
-        misspelled = self.spell.unknown(text_tokens_without_stopwords)
+        termsToCheck = {}
+        for term in text_tokens_without_stopwords:
+            if term.lower() == term:
+                index = text_tokens_without_stopwords.index(term)
+                termsToCheck[term] = index
+        misspelled = self.spell.unknown(termsToCheck.keys())
         for misTerm in misspelled:
-            try:
-                indexError = text_tokens_without_stopwords.index(misTerm)
-                corrWord = self.spell.correction(misTerm)
-                text_tokens_without_stopwords[indexError] = self.spell.correction(misTerm)
-                print(text_tokens_without_stopwords[indexError])
-            except:
-                continue
-
+            text_tokens_without_stopwords[index] = self.spell.correction(misTerm)
 
 
 
