@@ -14,7 +14,7 @@ class Parse:
         self.stop_words = listOfStopWords.split(",")
         self.invIdx = indexer.inverted_idx
         #spelling correction
-        self.spell = SpellChecker(case_sensitive= True)
+        self.spell = SpellChecker(distance=2, case_sensitive=True)
 
     def parse_sentence(self, text):
         """
