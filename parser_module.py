@@ -369,7 +369,7 @@ class Parse:
 
                 #tags
                 if(wordToken[0] == '@' and len(wordToken) != 1):
-                    finalList.append("@")
+                    #finalList.append("@")
                     finalList.append(wordToken[1:])
                     continue
 
